@@ -13,7 +13,7 @@ export async function transcribeAudio(audioBuffer: ArrayBuffer): Promise<string>
     response_format: 'text',
   });
 
-  return transcription;
+  return transcription.text;
 }
 
 export async function generateResponse(

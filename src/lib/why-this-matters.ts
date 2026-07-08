@@ -66,7 +66,10 @@ export const WHY_THIS_MATTERS = {
   emotionalIntelligence: `
     You build EMOTIONAL INTELLIGENCE, not just tactical knowledge.
     
-    Tactical knowledge is: 
+    Tactical knowledge is what you say.
+    Emotional intelligence is knowing WHEN to say it.
+    The avatar trains both.
+  `,
 };
 
 export const QUOTABLE = [

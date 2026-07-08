@@ -5,3 +5,4 @@ node_modules/
 .env.*.local
 *.tsbuildinfo
 next-env.d.ts
+.next\nnode_modules\n*.local\nnext-output.log\nNUL\nNEGOTIA8_FRONTEND_PREVIEW.html
