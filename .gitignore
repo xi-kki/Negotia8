@@ -1,0 +1,12 @@
+node_modules/
+.next/
+*.local
+.env.local
+.env.*.local
+*.tsbuildinfo
+next-env.d.ts
+next-output.log
+NEGOTIA8_FRONTEND_PREVIEW.html
+livekit-agent/
+talking-avatar/
+skills/
