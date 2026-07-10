@@ -141,7 +141,9 @@ export async function stopSpeaking(): Promise<void> {
   if (currentSource) {
     try {
       currentSource.stop();
-    } catch (_) {}
+    } catch {
+      // Source may already be stopped — safe to ignore
+    }
     currentSource = null;
   }
   

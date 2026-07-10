@@ -10,6 +10,7 @@ interface Props {
 export default function RecordButton({ onTranscript, disabled }: Props) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
 
@@ -39,8 +40,13 @@ export default function RecordButton({ onTranscript, disabled }: Props) {
       mediaRecorder.current = recorder;
       recorder.start();
       setIsRecording(true);
-    } catch {
-      alert('Microphone access denied. Please allow mic permissions.');
+    } catch (err) {
+      const message = err instanceof DOMException && err.name === 'NotAllowedError'
+        ? 'Microphone access denied. Please allow mic permissions in your browser.'
+        : 'Could not access microphone. Please check your device settings.';
+      setMicError(message);
+      // Auto-clear after 5 seconds
+      setTimeout(() => setMicError(null), 5000);
     }
   }, []);
 
@@ -91,6 +97,23 @@ export default function RecordButton({ onTranscript, disabled }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+      {/* Mic error message */}
+      {micError && (
+        <div
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'var(--red)',
+            fontSize: '0.82rem',
+            textAlign: 'center',
+            maxWidth: 280,
+          }}
+        >
+          ⚠️ {micError}
+        </div>
+      )}
       <button
         onMouseDown={startRecording}
         onMouseUp={stopRecording}

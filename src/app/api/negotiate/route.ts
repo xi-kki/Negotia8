@@ -2,6 +2,27 @@ import Groq from 'groq-sdk';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+// ─── Rate Limiting (in-memory, per-IP) ──────────────────────────────
+// Production: use Redis or Vercel KV for distributed rate limiting
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 20;           // 20 requests per minute per IP
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) return false;
+
+  record.count++;
+  return true;
+}
+
 /**
  * POST /api/negotiate
  *
@@ -25,11 +46,26 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
  */
 export async function POST(request: Request) {
   try {
+    // ─── Rate limit check ──────────────────────────────────────────
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!checkRateLimit(ip)) {
+      return Response.json(
+        { error: 'Too many requests. Please wait a moment and try again.' },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const { transcript, scenario = 'salary', history = [], turnNumber = 0 } = body;
 
-    if (!transcript || typeof transcript !== 'string') {
+    // ─── Input validation ───────────────────────────────────────────
+    if (!transcript || typeof transcript !== 'string' || transcript.length > 2000) {
       return Response.json({ error: 'Missing or invalid transcript' }, { status: 400 });
+    }
+
+    const validScenarios = ['salary', 'startup', 'car'];
+    if (!validScenarios.includes(scenario)) {
+      return Response.json({ error: 'Invalid scenario' }, { status: 400 });
     }
 
     // ─── Pick system prompt based on scenario ─────────────────────
@@ -68,10 +104,11 @@ export async function POST(request: Request) {
       tacticsUsed,
       turnNumber: turnNumber + 1,
     });
-  } catch (error: any) {
-    console.error('/api/negotiate error:', error?.message || error);
+  } catch (error: unknown) {
+    // Log full error server-side only — never leak internals to client
+    console.error('/api/negotiate error:', error instanceof Error ? error.message : error);
     return Response.json(
-      { error: 'Negotiation engine failed', details: error?.message },
+      { error: 'Negotiation engine temporarily unavailable. Please try again.' },
       { status: 500 },
     );
   }

@@ -7,31 +7,7 @@ import CoachingReport from '@/components/CoachingReport';
 import AvatarCanvas from '@/components/avatar/AvatarCanvas';
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
-import type { Emotion } from '@/types/emotion';
-
-type View = 'select' | 'negotiate' | 'coaching';
-
-interface Turn {
-  userText: string;
-  aiText: string;
-  emotion: Emotion;
-}
-
-interface CoachingReportData {
-  overallScore: number;
-  breakdown: {
-    outcome: number;
-    tactics: number;
-    delivery: number;
-    adaptability: number;
-  };
-  whatYouDidWell: string[];
-  missedOpportunities: string[];
-  phrasesYouCouldHaveSaid: string[];
-  tacticsYouUsed: string[];
-  totalFillerWords: number;
-  advice: string;
-}
+import type { Emotion, Turn, CoachingReportData, ViewMode } from '@/types';
 
 const OPENING_LINES: Record<string, string> = {
   'salary-entry': "Thanks for coming in! We're excited about your application. We're offering $75K to start — it's competitive for entry-level around here.",
@@ -49,7 +25,7 @@ const OPENING_LINES: Record<string, string> = {
 };
 
 export default function Home() {
-  const [view, setView] = useState<View>('select');
+  const [view, setView] = useState<ViewMode>('select');
   const [scenarioId, setScenarioId] = useState<string | null>(null);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [currentEmotion, setCurrentEmotion] = useState<Emotion>('neutral');
