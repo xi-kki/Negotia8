@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { Mic, AlertTriangle, Square } from 'lucide-react';
 
 interface Props {
   onTranscript: (text: string) => void;
@@ -112,7 +113,8 @@ export default function RecordButton({ onTranscript, disabled }: Props) {
             maxWidth: 280,
           }}
         >
-          ⚠️ {micError}
+          <AlertTriangle size={14} style={{ verticalAlign: 'middle', marginRight: '0.3rem' }} />
+          {micError}
         </div>
       )}
       <button
@@ -138,7 +140,7 @@ export default function RecordButton({ onTranscript, disabled }: Props) {
           opacity: disabled ? 0.5 : 1,
         }}
       >
-        {isRecording ? '⏹' : '🎙️'}
+        {isRecording ? <Square size={24} /> : <Mic size={24} />}
       </button>
       <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
         {isProcessing ? '🔊 Transcribing...' : isRecording ? 'Release to send' : 'Hold to speak'}

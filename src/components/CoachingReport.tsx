@@ -1,5 +1,15 @@
 'use client';
 
+import {
+  CheckCircle,
+  AlertTriangle,
+  MessageCircle,
+  Target,
+  Mic,
+  Pin,
+  RotateCcw,
+} from 'lucide-react';
+
 interface CoachingReportData {
   overallScore: number;
   breakdown: {
@@ -97,7 +107,7 @@ export default function CoachingReport({ report, onRestart }: Props) {
 
       {/* What you did well */}
       {report.whatYouDidWell.length > 0 && (
-        <Section title="✅ What You Did Well">
+        <Section title="What You Did Well" icon={<CheckCircle size={14} color="var(--green)" />}>
           {report.whatYouDidWell.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
@@ -106,7 +116,10 @@ export default function CoachingReport({ report, onRestart }: Props) {
 
       {/* Missed opportunities */}
       {report.missedOpportunities.length > 0 && (
-        <Section title="⚠️ Missed Opportunities">
+        <Section
+          title="Missed Opportunities"
+          icon={<AlertTriangle size={14} color="var(--yellow)" />}
+        >
           {report.missedOpportunities.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
@@ -115,10 +128,13 @@ export default function CoachingReport({ report, onRestart }: Props) {
 
       {/* Phrases */}
       {report.phrasesYouCouldHaveSaid.length > 0 && (
-        <Section title="💬 You Could Have Said">
+        <Section
+          title="You Could Have Said"
+          icon={<MessageCircle size={14} color="var(--accent)" />}
+        >
           {report.phrasesYouCouldHaveSaid.map((item, i) => (
             <li key={i} style={{ fontStyle: 'italic', color: 'var(--accent-hover)' }}>
-              "{item}"
+              &quot;{item}&quot;
             </li>
           ))}
         </Section>
@@ -126,7 +142,7 @@ export default function CoachingReport({ report, onRestart }: Props) {
 
       {/* Tactics */}
       {report.tacticsYouUsed.length > 0 && (
-        <Section title="🎯 Tactics Used">
+        <Section title="Tactics Used" icon={<Target size={14} color="var(--accent)" />}>
           {report.tacticsYouUsed.map((t, i) => (
             <li key={i}>{t}</li>
           ))}
@@ -135,8 +151,18 @@ export default function CoachingReport({ report, onRestart }: Props) {
 
       {/* Filler words */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-          🗣️ Filler Words
+        <div
+          style={{
+            fontSize: '0.85rem',
+            color: 'var(--text-muted)',
+            marginBottom: '0.3rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+          }}
+        >
+          <Mic size={14} />
+          Filler Words
         </div>
         <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>
           {report.totalFillerWords} total
@@ -158,8 +184,18 @@ export default function CoachingReport({ report, onRestart }: Props) {
           borderLeft: '3px solid var(--accent)',
         }}
       >
-        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-          📌 Advice
+        <div
+          style={{
+            fontSize: '0.85rem',
+            color: 'var(--text-muted)',
+            marginBottom: '0.3rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+          }}
+        >
+          <Pin size={14} />
+          Advice
         </div>
         <div style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>{report.advice}</div>
       </div>
@@ -176,18 +212,41 @@ export default function CoachingReport({ report, onRestart }: Props) {
           color: '#fff',
           fontSize: '1rem',
           fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
         }}
       >
+        <RotateCcw size={16} />
         Practice Again
       </button>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+      <div
+        style={{
+          fontSize: '0.85rem',
+          color: 'var(--text-muted)',
+          marginBottom: '0.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+        }}
+      >
+        {icon}
         {title}
       </div>
       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', lineHeight: 1.6 }}>

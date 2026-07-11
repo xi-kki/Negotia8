@@ -10,6 +10,17 @@ import AvatarProviderToggle, { useAvatarProvider } from '@/components/AvatarProv
 import { getCounterpartAvatar, preloadAvatars } from '@/lib/avatar-utils';
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
+import {
+  Mic,
+  Bot,
+  CircleDot,
+  Hand,
+  FileText,
+  AlertTriangle,
+  RotateCcw,
+  Square,
+  ArrowLeft,
+} from 'lucide-react';
 import type { Emotion, Turn, CoachingReportData, ViewMode } from '@/types';
 
 const OPENING_LINES: Record<string, string> = {
@@ -95,7 +106,6 @@ export default function Home() {
   useEffect(() => {
     if (viewRef.current) {
       viewRef.current.classList.remove('fade-in');
-      // Force reflow
       void viewRef.current.offsetWidth;
       viewRef.current.classList.add('fade-in');
     }
@@ -109,13 +119,14 @@ export default function Home() {
     setError(null);
     setView('negotiate');
 
-    // AI opens the conversation
     setTimeout(() => {
       const text = OPENING_LINES[id] || "Let's start the negotiation. What are you thinking?";
       setAiResponse(text);
       setCurrentEmotion('neutral');
       setIsAiSpeaking(true);
-      speakText(text).finally(() => setIsAiSpeaking(false));
+      speakText(text)
+        .catch((e) => console.warn('Opening TTS failed:', e))
+        .finally(() => setIsAiSpeaking(false));
     }, 800);
   }, []);
 
@@ -161,13 +172,12 @@ export default function Home() {
         setCurrentEmotion(emotion);
         setAiResponse(newTurn.aiText);
         setIsAiSpeaking(true);
-        await speakText(newTurn.aiText);
+        await speakText(newTurn.aiText).catch((e) => console.warn('Response TTS failed:', e));
         setIsAiSpeaking(false);
       } catch (err) {
         console.error('Negotiation error:', err);
         setError('Could not reach the AI. Using offline mode.');
 
-        // Fallback: simulate AI response
         const fallbackText =
           "Interesting point. I'll need to think about that. Can you elaborate on what you're proposing?";
         const newTurn: Turn = {
@@ -179,7 +189,7 @@ export default function Home() {
         setAiResponse(fallbackText);
         setCurrentEmotion('neutral');
         setIsAiSpeaking(true);
-        await speakText(fallbackText);
+        await speakText(fallbackText).catch((e) => console.warn('Fallback TTS failed:', e));
         setIsAiSpeaking(false);
       }
 
@@ -191,7 +201,6 @@ export default function Home() {
   const handleEndNegotiation = useCallback(() => {
     stopSpeaking();
 
-    // Use the coaching engine for detailed analysis
     if (turns.length === 0) {
       setReport({
         overallScore: 5,
@@ -207,7 +216,6 @@ export default function Home() {
       return;
     }
 
-    // Analyze each turn
     const analyzed = turns.map((t, i) => analyzeTurn(t.userText, t.aiText, t.emotion, i + 1));
     const coachingReport = generateCoachingReport(analyzed);
 
@@ -252,7 +260,7 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '1rem', minHeight: '100vh' }}>
-      {/* ─── Header ─────────────────────────────────────── */}
+      {/* Header */}
       <header
         style={{
           textAlign: 'center',
@@ -261,15 +269,27 @@ export default function Home() {
           marginBottom: '0.5rem',
         }}
       >
-        <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em' }}>
-          🎙️ Negotia8
+        <h1
+          style={{
+            margin: 0,
+            fontSize: '1.8rem',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+          }}
+        >
+          <Mic size={24} />
+          Negotia8
         </h1>
         <p style={{ margin: '0.3rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
           Practice negotiations against AI with emotional intelligence
         </p>
       </header>
 
-      {/* ─── View container ─────────────────────────────── */}
+      {/* View container */}
       <div ref={viewRef} className="fade-in">
         {/* SCENARIO SELECTOR */}
         {view === 'select' && (
@@ -329,7 +349,15 @@ export default function Home() {
                     gap: '0.4rem',
                   }}
                 >
-                  {isAiSpeaking ? '🔵 Speaking...' : '🤖 AI'}
+                  {isAiSpeaking ? (
+                    <>
+                      <CircleDot size={12} /> Speaking...
+                    </>
+                  ) : (
+                    <>
+                      <Bot size={14} /> AI
+                    </>
+                  )}
                   {isLoading && (
                     <span style={{ color: 'var(--yellow)', fontSize: '0.7rem' }}>
                       Processing your turn...
@@ -351,9 +379,13 @@ export default function Home() {
                   margin: '0.5rem 0',
                   fontSize: '0.82rem',
                   color: 'var(--red)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
                 }}
               >
-                ⚠️ {error}
+                <AlertTriangle size={14} />
+                {error}
               </div>
             )}
 
@@ -377,9 +409,13 @@ export default function Home() {
                     color: 'var(--text-muted)',
                     marginBottom: '0.5rem',
                     fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
                   }}
                 >
-                  📝 Transcript ({turns.length} turn{turns.length !== 1 ? 's' : ''})
+                  <FileText size={12} /> Transcript ({turns.length} turn
+                  {turns.length !== 1 ? 's' : ''})
                 </div>
                 {turns.map((t, i) => (
                   <div key={i} style={{ marginBottom: '0.75rem', fontSize: '0.85rem' }}>
@@ -405,7 +441,9 @@ export default function Home() {
                   fontSize: '0.9rem',
                 }}
               >
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>👋</div>
+                <div style={{ marginBottom: '0.5rem', color: 'var(--accent)' }}>
+                  <Hand size={40} />
+                </div>
                 <p>The AI is ready. Hold the mic and start negotiating!</p>
               </div>
             )}
@@ -442,8 +480,12 @@ export default function Home() {
                     fontSize: '0.88rem',
                     opacity: turns.length === 0 ? 0.5 : 1,
                     transition: 'all 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
                   }}
                 >
+                  <Square size={12} />
                   End Negotiation
                 </button>
                 <button
@@ -456,9 +498,13 @@ export default function Home() {
                     color: 'var(--text-muted)',
                     fontSize: '0.88rem',
                     transition: 'all 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
                   }}
                 >
-                  ← Back to Scenarios
+                  <ArrowLeft size={14} />
+                  Back to Scenarios
                 </button>
               </div>
             </div>

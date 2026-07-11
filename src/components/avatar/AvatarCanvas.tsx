@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import { Meh, Frown, Smile, Circle, Loader2 } from 'lucide-react';
 import type { Emotion } from './AvatarModel';
 import VoiceVisualizer from './VoiceVisualizer';
 
@@ -12,17 +13,16 @@ interface Props {
   isSpeaking?: boolean;
 }
 
-/**
- * 3D Avatar with emotional expressions.
- * Uses React Three Fiber with dynamic SSR-safe import.
- *
- * Emotions:
- * 😏 skeptical — raised eyebrow, head tilt, squint
- * 😤 frustrated — lowered brows, frown, tense
- * 😊 happy — raised brows, wide smile, bright
- * 😐 neutral — attentive, relaxed
- */
+const EMOTION_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = {
+  skeptical: { icon: <Meh size={12} />, color: '#eab308' },
+  frustrated: { icon: <Frown size={12} />, color: '#ef4444' },
+  happy: { icon: <Smile size={12} />, color: '#22c55e' },
+  neutral: { icon: <Circle size={12} />, color: '#8888a0' },
+};
+
 export default function AvatarCanvas({ emotion = 'neutral', isSpeaking = false }: Props) {
+  const config = EMOTION_CONFIG[emotion] || EMOTION_CONFIG.neutral;
+
   return (
     <div
       style={{
@@ -52,7 +52,7 @@ export default function AvatarCanvas({ emotion = 'neutral', isSpeaking = false }
           background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(6px)',
           fontSize: '0.78rem',
-          color: formatter(emotion).color,
+          color: config.color,
           textTransform: 'capitalize',
           display: 'flex',
           alignItems: 'center',
@@ -60,7 +60,7 @@ export default function AvatarCanvas({ emotion = 'neutral', isSpeaking = false }
           zIndex: 10,
         }}
       >
-        <span>{formatter(emotion).icon}</span>
+        {config.icon}
         <span>{emotion}</span>
       </div>
 
@@ -104,8 +104,16 @@ function LoadingFallback() {
         fontSize: '0.9rem',
       }}
     >
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎭</div>
+      <div
+        style={{
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}
+      >
+        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--accent)' }} />
         <div>Loading avatar...</div>
       </div>
     </div>
@@ -132,17 +140,4 @@ function Waveform() {
       ))}
     </span>
   );
-}
-
-function formatter(emotion: string): { icon: string; color: string } {
-  switch (emotion) {
-    case 'skeptical':
-      return { icon: '😏', color: '#eab308' };
-    case 'frustrated':
-      return { icon: '😤', color: '#ef4444' };
-    case 'happy':
-      return { icon: '😊', color: '#22c55e' };
-    default:
-      return { icon: '😐', color: '#8888a0' };
-  }
 }

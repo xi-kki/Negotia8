@@ -37,8 +37,13 @@ button {
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
 }
 
 /* ─── Speaking waveform bars ──────────────── */
@@ -47,14 +52,26 @@ button {
 }
 
 @keyframes waveform {
-  0% { transform: scaleY(0.4); opacity: 0.5; }
-  100% { transform: scaleY(1.2); opacity: 1; }
+  0% {
+    transform: scaleY(0.4);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scaleY(1.2);
+    opacity: 1;
+  }
 }
 
 /* ─── View transitions ────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fade-in {
@@ -68,6 +85,20 @@ button {
 .scenario-card:hover {
   transform: translateX(4px);
   border-color: var(--accent) !important;
+}
+
+/* ─── Spin animation ─────────────────────── */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Scrollbar styling ───────────────────── */

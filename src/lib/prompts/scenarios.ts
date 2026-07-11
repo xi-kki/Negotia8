@@ -319,14 +319,14 @@ export function getScenariosByCategory(category: string): Scenario[] {
 }
 
 export const CATEGORIES = [
-  { name: 'Salary & Compensation', count: 4, icon: '💼' },
-  { name: 'Fundraising & Equity', count: 3, icon: '🚀' },
-  { name: 'Sales & Freelance', count: 3, icon: '🤝' },
-  { name: 'Consumer', count: 2, icon: '🛒' },
+  { name: 'Salary & Compensation', count: 4, icon: 'briefcase' },
+  { name: 'Fundraising & Equity', count: 3, icon: 'rocket' },
+  { name: 'Sales & Freelance', count: 3, icon: 'handshake' },
+  { name: 'Consumer', count: 2, icon: 'cart' },
 ];
 
 export const DIFFICULTY_COLORS = {
-  easy: '🟢',
-  medium: '🟡',
-  hard: '🔴',
+  easy: '#22c55e',
+  medium: '#eab308',
+  hard: '#ef4444',
 };

@@ -1,14 +1,24 @@
 'use client';
 
 import { useState } from 'react';
+import { Briefcase, Rocket, Handshake, ShoppingCart } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 export interface ScenarioOption {
   id: string;
   title: string;
   category: string;
   difficulty: 'easy' | 'medium' | 'hard';
-  icon: string;
+  icon: ReactNode;
 }
+
+const CATEGORY_ICONS: Record<string, ReactNode> = {
+  Salary: <Briefcase size={18} />,
+  Fundraising: <Rocket size={18} />,
+  Freelance: <Handshake size={18} />,
+  Sales: <Handshake size={18} />,
+  Consumer: <ShoppingCart size={18} />,
+};
 
 const SCENARIOS: ScenarioOption[] = [
   {
@@ -16,84 +26,84 @@ const SCENARIOS: ScenarioOption[] = [
     title: 'Entry-Level Salary',
     category: 'Salary',
     difficulty: 'easy',
-    icon: '💼',
+    icon: CATEGORY_ICONS['Salary'],
   },
   {
     id: 'salary-senior',
     title: 'Senior Counter-Offer',
     category: 'Salary',
     difficulty: 'medium',
-    icon: '💼',
+    icon: CATEGORY_ICONS['Salary'],
   },
   {
     id: 'salary-equity',
     title: 'Equity vs Cash',
     category: 'Salary',
     difficulty: 'hard',
-    icon: '💼',
+    icon: CATEGORY_ICONS['Salary'],
   },
   {
     id: 'salary-counteroffer',
     title: 'Employer Counteroffer',
     category: 'Salary',
     difficulty: 'hard',
-    icon: '💼',
+    icon: CATEGORY_ICONS['Salary'],
   },
   {
     id: 'fundraising-cofounder',
     title: 'Co-Founder Equity Split',
     category: 'Fundraising',
     difficulty: 'easy',
-    icon: '🚀',
+    icon: CATEGORY_ICONS['Fundraising'],
   },
   {
     id: 'fundraising-preseed',
     title: 'Pre-Seed SAFE',
     category: 'Fundraising',
     difficulty: 'medium',
-    icon: '🚀',
+    icon: CATEGORY_ICONS['Fundraising'],
   },
   {
     id: 'fundraising-series-a',
     title: 'Series A Term Sheet',
     category: 'Fundraising',
     difficulty: 'hard',
-    icon: '🚀',
+    icon: CATEGORY_ICONS['Fundraising'],
   },
   {
     id: 'freelance-rate',
     title: 'Freelance Rate',
     category: 'Freelance',
     difficulty: 'easy',
-    icon: '🤝',
+    icon: CATEGORY_ICONS['Freelance'],
   },
   {
     id: 'scope-creep',
     title: 'Scope Creep',
     category: 'Freelance',
     difficulty: 'medium',
-    icon: '🤝',
+    icon: CATEGORY_ICONS['Freelance'],
   },
   {
     id: 'vendor-pricing',
     title: 'B2B SaaS Pricing',
     category: 'Sales',
     difficulty: 'hard',
-    icon: '🤝',
+    icon: CATEGORY_ICONS['Sales'],
   },
   {
     id: 'car-buying',
     title: 'Car Dealership',
     category: 'Consumer',
     difficulty: 'easy',
-    icon: '🛒',
+    icon: CATEGORY_ICONS['Consumer'],
   },
   {
     id: 'rent-negotiation',
     title: 'Rent Negotiation',
     category: 'Consumer',
     difficulty: 'medium',
-    icon: '🛒',
+    icon: CATEGORY_ICONS['Consumer'],
   },
 ];
 
@@ -106,6 +116,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 interface Props {
   onSelect: (scenarioId: string) => void;
   selectedId: string | null;
+  provider?: string;
 }
 
 export default function ScenarioSelector({ onSelect, selectedId }: Props) {
@@ -172,7 +183,9 @@ export default function ScenarioSelector({ onSelect, selectedId }: Props) {
                 selectedId === s.id ? 'var(--bg-hover)' : 'var(--bg-card)')
             }
           >
-            <span style={{ fontSize: '1.2rem' }}>{s.icon}</span>
+            <span style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>
+              {s.icon}
+            </span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 500 }}>{s.title}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.category}</div>
