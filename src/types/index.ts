@@ -1,6 +1,6 @@
 /**
  * Shared types for Negoti8
- * 
+ *
  * Single source of truth for interfaces used across components.
  * Import from '@/types' instead of redefining locally.
  */
@@ -19,9 +19,9 @@ export interface Turn {
 }
 
 export interface CoachingBreakdown {
-  outcome: number;     // 0-3
-  tactics: number;     // 0-3
-  delivery: number;    // 0-2
+  outcome: number; // 0-3
+  tactics: number; // 0-3
+  delivery: number; // 0-2
   adaptability: number; // 0-2
 }
 

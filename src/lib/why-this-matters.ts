@@ -75,7 +75,7 @@ export const WHY_THIS_MATTERS = {
 export const QUOTABLE = [
   '"It feels like negotiating with a real person — not a chatbot."',
   '"The raised eyebrow when you lowball is worth 1,000 words of coaching."',
-  '"You can\'t learn to negotiate if you can\'t see the other person\'s face."',
+  "\"You can't learn to negotiate if you can't see the other person's face.\"",
   '"Text chatbots teach you what to say. Avatars teach you when to say it."',
   '"After 20 skeptical eyebrow raises, a real one won\'t phase you."',
   '"Silence isn\'t just awkward in real life — it\'s awkward with an avatar that fidgets."',

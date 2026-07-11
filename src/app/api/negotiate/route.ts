@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk';
+import { SCENARIOS } from '@/lib/prompts/scenarios';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -6,7 +7,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // Production: use Redis or Vercel KV for distributed rate limiting
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 20;           // 20 requests per minute per IP
+const RATE_LIMIT_MAX = 20; // 20 requests per minute per IP
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -32,7 +33,7 @@ function checkRateLimit(ip: string): boolean {
  * Request body (JSON):
  * {
  *   transcript: "I was thinking $82K would be more appropriate.",
- *   scenario: "salary" | "startup" | "car",
+ *   scenarioId: "salary-entry" | "salary-senior" | ... (all 12 scenarios),
  *   history: [{ role: "user" | "assistant", content: "..." }],
  *   turnNumber: 3
  * }
@@ -56,20 +57,36 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { transcript, scenario = 'salary', history = [], turnNumber = 0 } = body;
+    const { transcript, scenarioId = 'salary-entry', history = [], turnNumber = 0 } = body;
 
     // ─── Input validation ───────────────────────────────────────────
     if (!transcript || typeof transcript !== 'string' || transcript.length > 2000) {
       return Response.json({ error: 'Missing or invalid transcript' }, { status: 400 });
     }
 
-    const validScenarios = ['salary', 'startup', 'car'];
-    if (!validScenarios.includes(scenario)) {
-      return Response.json({ error: 'Invalid scenario' }, { status: 400 });
+    // Find scenario by ID
+    const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+    if (!scenario) {
+      return Response.json(
+        { error: 'Invalid scenario. Must be one of: ' + SCENARIOS.map((s) => s.id).join(', ') },
+        { status: 400 },
+      );
     }
 
-    // ─── Pick system prompt based on scenario ─────────────────────
-    const systemPrompt = getScenarioPrompt(scenario);
+    // ─── Build system prompt with difficulty adjustments ─────────────
+    let systemPrompt = scenario.systemPrompt;
+
+    // Add difficulty-based behavior modifications
+    if (scenario.difficulty === 'easy') {
+      systemPrompt += `\n\nYou are being FAIR and REASONABLE. Make some concessions early. Show warmth and flexibility. Don't be too hard on the user.`;
+    } else if (scenario.difficulty === 'medium') {
+      systemPrompt += `\n\nYou are MODERATELY CHALLENGING. Hold your ground on key points but show willingness to negotiate. Use 2-3 tactics but don't overwhelm.`;
+    } else if (scenario.difficulty === 'hard') {
+      systemPrompt += `\n\nYou are TOUGH and EXPERIENCED. Use all your tactics aggressively. Don't concede easily. Push back hard on weak arguments. Only concede to strong, data-driven points.`;
+    }
+
+    // Add turn-based context
+    systemPrompt += `\n\nThis is turn ${turnNumber + 1} of the negotiation. ${turnNumber > 4 ? 'Start showing signs of wanting to close the deal or walk away.' : ''}`;
 
     // ─── Build message history ────────────────────────────────────
     const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
@@ -93,7 +110,7 @@ export async function POST(request: Request) {
     const aiText = completion.choices[0]?.message?.content || '';
 
     // ─── Extract emotion from AI response ─────────────────────────
-    const emotion = detectEmotion(transcript, aiText);
+    const emotion = detectEmotion(transcript, aiText, scenario.targetRange);
 
     // ─── Detect tactics used by the AI ────────────────────────────
     const tacticsUsed = detectAiTactics(aiText);
@@ -103,6 +120,7 @@ export async function POST(request: Request) {
       emotion,
       tacticsUsed,
       turnNumber: turnNumber + 1,
+      scenarioId,
     });
   } catch (error: unknown) {
     // Log full error server-side only — never leak internals to client
@@ -114,78 +132,75 @@ export async function POST(request: Request) {
   }
 }
 
-// ─── Scenario Prompts ─────────────────────────────────────────────────
-
-function getScenarioPrompt(scenario: string): string {
-  const prompts: Record<string, string> = {
-    salary: `You are a friendly but budget-conscious recruiter at a mid-size tech company.
-You're hiring for a senior frontend engineer role with a budget of $75K–$85K.
-Your strategy:
-- Start at $75K and mention it's "competitive for entry-level."
-- If the candidate counters, ask about their current compensation.
-- Use silence after they name their number — let them fill the gap.
-- You have flexibility up to $82K + one extra week of vacation.
-- Beyond $85K, you need "manager approval" (limited authority tactic).
-- If they use data (market research, competing offers), be impressed and concede slightly.
-- If they get aggressive or make extreme lowballs, get defensive but stay professional.
-- Keep responses under 3 sentences. Be warm but firm.`,
-
-    startup: `You are a seasoned VC partner at a top-tier firm evaluating a Series A investment.
-The founder is raising $5M at a $20M post-money valuation.
-Your strategy:
-- Start valuation at $15M post: "Given your $500K ARR, $15M feels right."
-- Push for a board seat: "We always take a board seat at Series A."
-- Use good cop/bad cop: "My partners think $15M is fair, but I can try for $17M."
-- Ask about competing term sheets: "What are other firms offering?"
-- If they're strong negotiators, offer $20M but with 2x liquidation preference.
-- Respect data-driven arguments. Use silence to test their conviction.
-- Keep responses under 3 sentences. Be sharp but respectful.`,
-
-    car: `You are a car salesperson at an EV dealership selling a new EV with an MSRP of $48K.
-Your strategy:
-- Start at MSRP + dealer fees: "$48K plus delivery and documentation."
-- If asked for a lower price: "Let me see what I can do."
-- Focus on monthly payment, not total price (four-square tactic).
-- Add value: "It comes with paint protection and an extended warranty."
-- Go "talk to your manager" and come back at $46K.
-- You can go to $44K but only if they walk away or mention a competitor.
-- Keep responses under 3 sentences. Be friendly but shrewd.`,
-  };
-
-  return prompts[scenario] || prompts.salary;
-}
-
 // ─── Emotion Detection ────────────────────────────────────────────────
 
-function detectEmotion(userText: string, aiText: string): string {
+function detectEmotion(userText: string, aiText: string, targetRange: [number, number]): string {
   const lower = userText.toLowerCase();
+
+  // Extract any numbers from the user's text
+  const numbers = userText.match(/\$?(\d{1,6}(?:,\d{3})*(?:\.\d+)?)\s*(k|K|M|m)?/g);
+  let userOffer: number | null = null;
+  if (numbers && numbers.length > 0) {
+    const parsed = parseInt(numbers[0].replace(/[$,]/g, ''));
+    if (!isNaN(parsed)) {
+      userOffer = parsed;
+      if (lower.includes('k')) userOffer *= 1000;
+      if (lower.includes('m')) userOffer *= 1000000;
+    }
+  }
 
   // User made a weak argument → avatar is skeptical
   if (
-    /\b(i think|i feel|maybe|perhaps|i guess|sort of|kind of)\b/.test(lower) &&
-    !/\b(research|data|offer from|market|comparable)\b/.test(lower)
+    /\b(i think|i feel|maybe|perhaps|i guess|sort of|kind of|not sure)\b/.test(lower) &&
+    !/\b(research|data|offer from|market|comparable|industry)\b/.test(lower)
   ) {
     return 'skeptical';
   }
 
-  // User lowballed or got aggressive → avatar is frustrated
+  // User lowballed significantly → avatar is frustrated/skeptical
+  if (userOffer && userOffer < targetRange[0] * 0.7) {
+    return 'skeptical';
+  }
+
+  // User is being aggressive or dismissive → avatar is frustrated
   if (
-    /\b(ridiculous|crazy|absurd|no way|unacceptable|that's (too|not))\b/.test(lower) ||
-    /is that the best|come on|seriously/i.test(lower)
+    /\b(ridiculous|crazy|absurd|no way|unacceptable|waste of time|come on|seriously)\b/.test(lower)
+  ) {
+    return 'frustrated';
+  }
+
+  // User rejected without counter → avatar is frustrated
+  if (
+    /\b(no|not interested|too expensive|forget it|walk away)\b/.test(lower) &&
+    !/\b(but|however|what about|counter|offer)\b/.test(lower)
   ) {
     return 'frustrated';
   }
 
   // User used data, BATNA, or good tactics → avatar is happy
   if (
-    /\b(based on|research|data|market|competing offer|another offer|industry)\b/.test(lower)
+    /\b(based on|research|data|market|competing offer|another offer|industry|comparable)\b/.test(
+      lower,
+    )
   ) {
+    return 'happy';
+  }
+
+  // User made a reasonable counteroffer within range → avatar is happy
+  if (userOffer && userOffer >= targetRange[0] && userOffer <= targetRange[1]) {
+    return 'happy';
+  }
+
+  // User used a good negotiation tactic → avatar is happy
+  if (/\b(what if we|how about|can we meet|common ground|find a way|i can do x if)\b/.test(lower)) {
     return 'happy';
   }
 
   // AI is closing the deal positively → avatar is happy
   if (
-    /\b(great|excellent|perfect|deal|agree|happy to|pleased)\b/.test(aiText.toLowerCase())
+    /\b(great|excellent|perfect|deal|agree|happy to|pleased|shake on it)\b/.test(
+      aiText.toLowerCase(),
+    )
   ) {
     return 'happy';
   }
@@ -199,20 +214,29 @@ function detectAiTactics(aiText: string): string[] {
   const tactics: string[] = [];
   const lower = aiText.toLowerCase();
 
-  if (/\b(let me check|need to ask|talk to my|manager approval)\b/.test(lower)) {
+  if (/\b(let me check|need to ask|talk to my|manager approval|run this by)\b/.test(lower)) {
     tactics.push('limited-authority');
   }
-  if (/\b(other candidates|other prospects|other interest)\b/.test(lower)) {
+  if (/\b(other candidates|other prospects|other interest|other offers|won't last)\b/.test(lower)) {
     tactics.push('scarcity');
   }
-  if (/\b(i understand|i appreciate|i see where)\b/.test(lower)) {
+  if (/\b(i understand|i appreciate|i see where|i hear you)\b/.test(lower)) {
     tactics.push('empathy');
   }
-  if (/\b(honestly|to be frank|between us)\b/.test(lower)) {
+  if (/\b(honestly|to be frank|between us|off the record)\b/.test(lower)) {
     tactics.push('false-frankness');
   }
-  if (/\b(what about|how about|what if)\b/.test(lower)) {
+  if (/\b(what about|how about|what if|split the difference)\b/.test(lower)) {
     tactics.push('bracketing');
+  }
+  if (/\b(anchor|starting at|opening at|our budget is)\b/.test(lower)) {
+    tactics.push('anchoring');
+  }
+  if (/\b(we're a family|team|culture|mission|vision)\b/.test(lower)) {
+    tactics.push('emotional-appeal');
+  }
+  if (/\b(when we|after|future|next quarter|once we)\b/.test(lower)) {
+    tactics.push('future-promise');
   }
 
   return tactics;

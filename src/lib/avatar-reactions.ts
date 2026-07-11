@@ -48,7 +48,8 @@ export const AVATAR_REACTIONS = {
     eyes: 'Blinks faster, glances away briefly — silence is working',
     duration: 3000,
     transition: 'slow',
-    coaching: 'Silence is a SUPERWEAPON. You made them uncomfortable enough to fill the gap — they will offer more.',
+    coaching:
+      'Silence is a SUPERWEAPON. You made them uncomfortable enough to fill the gap — they will offer more.',
   },
 
   // ─── YOU GET AGGRESSIVE ────────────────────────────
@@ -92,7 +93,8 @@ export const AVATAR_REACTIONS = {
     eyes: 'Warm, connected, appreciative',
     duration: 3500,
     transition: 'slow',
-    coaching: 'Win-win is the goal of every negotiation. You found value for both sides — that is MASTER level.',
+    coaching:
+      'Win-win is the goal of every negotiation. You found value for both sides — that is MASTER level.',
   },
 
   // ─── DEAL IS CLOSING ───────────────────────────────
@@ -103,7 +105,7 @@ export const AVATAR_REACTIONS = {
     eyes: 'Soft, satisfied',
     duration: 3000,
     transition: 'slow',
-    coaching: 'You\'re closing the deal. This is when the real terms get locked.',
+    coaching: "You're closing the deal. This is when the real terms get locked.",
   },
 
   // ─── DEFAULT: LISTENING ────────────────────────────
@@ -112,7 +114,7 @@ export const AVATAR_REACTIONS = {
     face: '😐 Attentive, calm',
     body: 'Still, professional posture',
     eyes: 'Focused, regular blinking',
-    duration: 0,  // held until next trigger
+    duration: 0, // held until next trigger
     transition: 'none',
     coaching: '',
   },
@@ -127,13 +129,19 @@ export function classifyUserInput(text: string): AvatarReactionType {
   const lower = text.toLowerCase();
 
   // Weak argument patterns
-  if (/i think|i feel|maybe|perhaps|i guess|sort of|kind of/.test(lower) &&
-      !/(based on|research|data|offer from|market)/.test(lower)) {
+  if (
+    /i think|i feel|maybe|perhaps|i guess|sort of|kind of/.test(lower) &&
+    !/(based on|research|data|offer from|market)/.test(lower)
+  ) {
     return 'weakArgument';
   }
 
   // Strong BATNA patterns
-  if (/(another offer|competing offer|other offer|i have.*offer|recruiter reached out|interview(ing|ed) with)/.test(lower)) {
+  if (
+    /(another offer|competing offer|other offer|i have.*offer|recruiter reached out|interview(ing|ed) with)/.test(
+      lower,
+    )
+  ) {
     return 'strongBATNA';
   }
 
@@ -155,7 +163,9 @@ export function classifyUserInput(text: string): AvatarReactionType {
   }
 
   // Win-win patterns
-  if (/(win.?win|both (benefit|happy|get)|mutual|partnership|long.?term|grow together)/.test(lower)) {
+  if (
+    /(win.?win|both (benefit|happy|get)|mutual|partnership|long.?term|grow together)/.test(lower)
+  ) {
     return 'winWin';
   }
 

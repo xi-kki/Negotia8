@@ -29,23 +29,11 @@ export default function AvatarScene({ emotion = 'neutral', isSpeaking = false }:
         shadow-mapSize-width={512}
         shadow-mapSize-height={512}
       />
-      <directionalLight
-        position={[-3, 2, -2]}
-        intensity={0.5}
-        color="#6688ff"
-      />
-      <directionalLight
-        position={[0, -3, 2]}
-        intensity={0.3}
-        color="#ff8866"
-      />
+      <directionalLight position={[-3, 2, -2]} intensity={0.5} color="#6688ff" />
+      <directionalLight position={[0, -3, 2]} intensity={0.3} color="#ff8866" />
 
       {/* ─── Avatar ───────────────────────────────────────── */}
-      <Float
-        speed={1.2}
-        rotationIntensity={0.04}
-        floatIntensity={0.08}
-      >
+      <Float speed={1.2} rotationIntensity={0.04} floatIntensity={0.08}>
         <AvatarModel emotion={emotion} isSpeaking={isSpeaking} />
       </Float>
 

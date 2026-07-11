@@ -41,9 +41,10 @@ export default function RecordButton({ onTranscript, disabled }: Props) {
       recorder.start();
       setIsRecording(true);
     } catch (err) {
-      const message = err instanceof DOMException && err.name === 'NotAllowedError'
-        ? 'Microphone access denied. Please allow mic permissions in your browser.'
-        : 'Could not access microphone. Please check your device settings.';
+      const message =
+        err instanceof DOMException && err.name === 'NotAllowedError'
+          ? 'Microphone access denied. Please allow mic permissions in your browser.'
+          : 'Could not access microphone. Please check your device settings.';
       setMicError(message);
       // Auto-clear after 5 seconds
       setTimeout(() => setMicError(null), 5000);
@@ -182,7 +183,7 @@ async function convertWebmToWav(webmBlob: Blob): Promise<Blob> {
   for (let i = 0; i < length; i++) {
     for (let ch = 0; ch < numChannels; ch++) {
       const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(ch)[i]));
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
       offset += 2;
     }
   }

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const response = await fetch('https://api.groq.com/openai/v1/audio/speech', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -60,9 +60,6 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error('/api/tts error:', error?.message || error);
-    return Response.json(
-      { error: 'TTS failed', details: error?.message },
-      { status: 500 },
-    );
+    return Response.json({ error: 'TTS failed', details: error?.message }, { status: 500 });
   }
 }

@@ -9,7 +9,7 @@
  * This is what makes it feel like a real negotiation.
  */
 
-import type { Emotion, EmotionEvent } from '@/types/emotion';
+import type { EmotionEvent } from '@/types/emotion';
 
 /**
  * Analyze a user's negotiation response and determine
@@ -25,7 +25,7 @@ export function analyzeEmotion(
     turnNumber: number;
     lastOffer?: number;
     targetRange?: [number, number];
-  }
+  },
 ): EmotionEvent {
   const lower = userText.toLowerCase();
 
@@ -40,7 +40,7 @@ export function analyzeEmotion(
 
   // User lowballs significantly
   if (context.lastOffer && context.targetRange) {
-    const [min, max] = context.targetRange;
+    const [min] = context.targetRange;
     if (context.lastOffer < min * 0.7) {
       return { emotion: 'skeptical', intensity: 0.9, duration: 2000 };
     }
@@ -50,8 +50,13 @@ export function analyzeEmotion(
   // User is aggressive, dismissive, or wastes time
   if (
     containsAny(lower, [
-      'that is ridiculous', 'that is crazy', 'no way', 'absurd',
-      'waste of time', 'come on', 'seriously?',
+      'that is ridiculous',
+      'that is crazy',
+      'no way',
+      'absurd',
+      'waste of time',
+      'come on',
+      'seriously?',
       'i want to speak to your manager',
     ])
   ) {
@@ -59,8 +64,10 @@ export function analyzeEmotion(
   }
 
   // User rejects without counter (bad negotiation)
-  if (containsAny(lower, ['no', 'not interested', 'too expensive']) &&
-      !containsAny(lower, ['but', 'however', 'what about', 'i can do'])) {
+  if (
+    containsAny(lower, ['no', 'not interested', 'too expensive']) &&
+    !containsAny(lower, ['but', 'however', 'what about', 'i can do'])
+  ) {
     return { emotion: 'frustrated', intensity: 0.5, duration: 1500 };
   }
 
@@ -68,8 +75,11 @@ export function analyzeEmotion(
   // User makes a reasonable offer, shows preparation, uses good tactics
   if (
     containsAny(lower, [
-      'based on my research', 'market data shows', 'i have an offer from',
-      'comparables', 'industry standard',
+      'based on my research',
+      'market data shows',
+      'i have an offer from',
+      'comparables',
+      'industry standard',
     ])
   ) {
     return { emotion: 'happy', intensity: 0.6, duration: 2000 };
@@ -78,7 +88,7 @@ export function analyzeEmotion(
   // User meets somewhere reasonable
   if (context.lastOffer && context.targetRange) {
     const [min, max] = context.targetRange;
-    if (context.lastOffer >= min && context.lastOffer <= max) {
+    if (context.lastOffer >= min && context.lastOffer <= (max ?? Infinity)) {
       return { emotion: 'happy', intensity: 0.8, duration: 2500 };
     }
   }
@@ -86,8 +96,11 @@ export function analyzeEmotion(
   // User uses a good negotiation tactic
   if (
     containsAny(lower, [
-      'i appreciate that', 'let is find common ground',
-      'what if we', 'how about we', 'can we meet in the middle',
+      'i appreciate that',
+      'let is find common ground',
+      'what if we',
+      'how about we',
+      'can we meet in the middle',
       'i can do x if you can do y',
     ])
   ) {
@@ -99,7 +112,7 @@ export function analyzeEmotion(
 }
 
 function containsAny(text: string, patterns: string[]): boolean {
-  return patterns.some(p => text.includes(p));
+  return patterns.some((p) => text.includes(p));
 }
 
 /**

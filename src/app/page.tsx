@@ -5,23 +5,37 @@ import ScenarioSelector from '@/components/ScenarioSelector';
 import RecordButton from '@/components/RecordButton';
 import CoachingReport from '@/components/CoachingReport';
 import AvatarCanvas from '@/components/avatar/AvatarCanvas';
+import AvatarDicebear from '@/components/AvatarDicebear';
+import AvatarProviderToggle, { useAvatarProvider } from '@/components/AvatarProviderToggle';
+import { getCounterpartAvatar, preloadAvatars } from '@/lib/avatar-utils';
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
 import type { Emotion, Turn, CoachingReportData, ViewMode } from '@/types';
 
 const OPENING_LINES: Record<string, string> = {
-  'salary-entry': "Thanks for coming in! We're excited about your application. We're offering $75K to start — it's competitive for entry-level around here.",
-  'salary-senior': "Great to have you here. We really liked your profile. The offer is $155K base, plus the standard equity package.",
-  'salary-equity': "Welcome aboard! We're thrilled to have you join us pre-IPO. The offer is $120K and 0.5% equity.",
-  'salary-counteroffer': "Hey, thanks for sitting down with me. I heard you got an offer — I really hope we can figure something out.",
-  'fundraising-cofounder': "So I've been grinding on this idea for 6 months. I'm thinking 60/40 split to start, given the sweat equity.",
-  'fundraising-preseed': "I like your space. For a pre-revenue company, I'm thinking a $3M cap on a SAFE.",
-  'fundraising-series-a': "Great deck. Let's talk valuation. Given your $500K ARR, I'm thinking $15M post-money.",
-  'freelance-rate': "Love your portfolio! We've budgeted $100/hr for this 3-month redesign project.",
-  'scope-creep': "Hey, the homepage looks great! Just one more thing — could we add a testimonials carousel?",
-  'vendor-pricing': "Thanks for your time. Our platform starts at $120K annually for the enterprise tier.",
-  'car-buying': "Welcome! This is a beauty — $48K MSRP, plus delivery and documentation fees.",
-  'rent-negotiation': "Great unit, isn't it? $3,200 a month, available next month. It won't last long.",
+  'salary-entry':
+    "Thanks for coming in! We're excited about your application. We're offering $75K to start — it's competitive for entry-level around here.",
+  'salary-senior':
+    'Great to have you here. We really liked your profile. The offer is $155K base, plus the standard equity package.',
+  'salary-equity':
+    "Welcome aboard! We're thrilled to have you join us pre-IPO. The offer is $120K and 0.5% equity.",
+  'salary-counteroffer':
+    'Hey, thanks for sitting down with me. I heard you got an offer — I really hope we can figure something out.',
+  'fundraising-cofounder':
+    "So I've been grinding on this idea for 6 months. I'm thinking 60/40 split to start, given the sweat equity.",
+  'fundraising-preseed':
+    "I like your space. For a pre-revenue company, I'm thinking a $3M cap on a SAFE.",
+  'fundraising-series-a':
+    "Great deck. Let's talk valuation. Given your $500K ARR, I'm thinking $15M post-money.",
+  'freelance-rate':
+    "Love your portfolio! We've budgeted $100/hr for this 3-month redesign project.",
+  'scope-creep':
+    'Hey, the homepage looks great! Just one more thing — could we add a testimonials carousel?',
+  'vendor-pricing':
+    'Thanks for your time. Our platform starts at $120K annually for the enterprise tier.',
+  'car-buying': 'Welcome! This is a beauty — $48K MSRP, plus delivery and documentation fees.',
+  'rent-negotiation':
+    "Great unit, isn't it? $3,200 a month, available next month. It won't last long.",
 };
 
 export default function Home() {
@@ -34,7 +48,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<CoachingReportData | null>(null);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [avatarProvider, setAvatarProvider] = useAvatarProvider();
 
   const transcriptRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
@@ -49,7 +63,7 @@ export default function Home() {
   // Init TTS end callback + preload speech synthesis voices
   useEffect(() => {
     setOnEnded(() => setIsAiSpeaking(false));
-    
+
     // Preload browser speech voices so they're ready for fallback
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
@@ -58,6 +72,24 @@ export default function Home() {
       };
     }
   }, []);
+
+  // Preload avatars when provider changes
+  useEffect(() => {
+    preloadAvatars([
+      'salary-entry',
+      'salary-senior',
+      'salary-equity',
+      'salary-counteroffer',
+      'fundraising-cofounder',
+      'fundraising-preseed',
+      'fundraising-series-a',
+      'freelance-rate',
+      'scope-creep',
+      'vendor-pricing',
+      'car-buying',
+      'rent-negotiation',
+    ]);
+  }, [avatarProvider]);
 
   // Animation class on view change
   useEffect(() => {
@@ -87,68 +119,74 @@ export default function Home() {
     }, 800);
   }, []);
 
-  const handleTranscript = useCallback(async (text: string) => {
-    if (!scenarioId || !text) return;
-    if (text.startsWith('(Audio') || text.startsWith('(No speech')) return;
+  const handleTranscript = useCallback(
+    async (text: string) => {
+      if (!scenarioId || !text) return;
+      if (text.startsWith('(Audio') || text.startsWith('(No speech')) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const res = await fetch('/api/negotiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transcript: text,
-          scenario: scenarioId.split('-')[0],
-          history: turns.map(t => [
-            { role: 'user' as const, content: t.userText },
-            { role: 'assistant' as const, content: t.aiText },
-          ]).flat(),
-          turnNumber: turns.length,
-        }),
-      });
+      try {
+        const res = await fetch('/api/negotiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: text,
+            scenarioId: scenarioId,
+            history: turns
+              .map((t) => [
+                { role: 'user' as const, content: t.userText },
+                { role: 'assistant' as const, content: t.aiText },
+              ])
+              .flat(),
+            turnNumber: turns.length,
+          }),
+        });
 
-      if (!res.ok) {
-        throw new Error(`API responded with ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`API responded with ${res.status}`);
+        }
+
+        const data = await res.json();
+        const emotion: Emotion = (data.emotion || 'neutral') as Emotion;
+
+        const newTurn: Turn = {
+          userText: text,
+          aiText: data.aiText || 'I need to think about that.',
+          emotion,
+        };
+
+        setTurns((prev) => [...prev, newTurn]);
+        setCurrentEmotion(emotion);
+        setAiResponse(newTurn.aiText);
+        setIsAiSpeaking(true);
+        await speakText(newTurn.aiText);
+        setIsAiSpeaking(false);
+      } catch (err) {
+        console.error('Negotiation error:', err);
+        setError('Could not reach the AI. Using offline mode.');
+
+        // Fallback: simulate AI response
+        const fallbackText =
+          "Interesting point. I'll need to think about that. Can you elaborate on what you're proposing?";
+        const newTurn: Turn = {
+          userText: text,
+          aiText: fallbackText,
+          emotion: 'neutral',
+        };
+        setTurns((prev) => [...prev, newTurn]);
+        setAiResponse(fallbackText);
+        setCurrentEmotion('neutral');
+        setIsAiSpeaking(true);
+        await speakText(fallbackText);
+        setIsAiSpeaking(false);
       }
 
-      const data = await res.json();
-      const emotion: Emotion = (data.emotion || 'neutral') as Emotion;
-
-      const newTurn: Turn = {
-        userText: text,
-        aiText: data.aiText || 'I need to think about that.',
-        emotion,
-      };
-
-      setTurns(prev => [...prev, newTurn]);
-      setCurrentEmotion(emotion);
-      setAiResponse(newTurn.aiText);
-      setIsAiSpeaking(true);
-      await speakText(newTurn.aiText);
-      setIsAiSpeaking(false);
-    } catch (err) {
-      console.error('Negotiation error:', err);
-      setError('Could not reach the AI. Using offline mode.');
-
-      // Fallback: simulate AI response
-      const fallbackText = "Interesting point. I'll need to think about that. Can you elaborate on what you're proposing?";
-      const newTurn: Turn = {
-        userText: text,
-        aiText: fallbackText,
-        emotion: 'neutral',
-      };
-      setTurns(prev => [...prev, newTurn]);
-      setAiResponse(fallbackText);
-      setCurrentEmotion('neutral');
-      setIsAiSpeaking(true);
-      await speakText(fallbackText);
-      setIsAiSpeaking(false);
-    }
-
-    setIsLoading(false);
-  }, [scenarioId, turns]);
+      setIsLoading(false);
+    },
+    [scenarioId, turns],
+  );
 
   const handleEndNegotiation = useCallback(() => {
     stopSpeaking();
@@ -170,26 +208,31 @@ export default function Home() {
     }
 
     // Analyze each turn
-    const analyzed = turns.map((t, i) =>
-      analyzeTurn(t.userText, t.aiText, t.emotion, i + 1)
-    );
+    const analyzed = turns.map((t, i) => analyzeTurn(t.userText, t.aiText, t.emotion, i + 1));
     const coachingReport = generateCoachingReport(analyzed);
 
     setReport({
       overallScore: coachingReport.overallScore,
       breakdown: coachingReport.breakdown,
-      whatYouDidWell: coachingReport.whatYouDidWell.length > 0
-        ? coachingReport.whatYouDidWell
-        : ['You engaged in the negotiation and practiced your skills.'],
-      missedOpportunities: coachingReport.missedOpportunities.length > 0
-        ? coachingReport.missedOpportunities
-        : ['Try using data-backed anchors and specific numbers.'],
-      phrasesYouCouldHaveSaid: coachingReport.phrasesYouCouldHaveSaid.length > 0
-        ? coachingReport.phrasesYouCouldHaveSaid
-        : ['"Based on my research, the market range is X-Y."', '"I have another offer that\'s hard to ignore."'],
-      tacticsYouUsed: coachingReport.tacticsYouUsed.length > 0
-        ? coachingReport.tacticsYouUsed
-        : ['Anchoring', 'Counter-offer'],
+      whatYouDidWell:
+        coachingReport.whatYouDidWell.length > 0
+          ? coachingReport.whatYouDidWell
+          : ['You engaged in the negotiation and practiced your skills.'],
+      missedOpportunities:
+        coachingReport.missedOpportunities.length > 0
+          ? coachingReport.missedOpportunities
+          : ['Try using data-backed anchors and specific numbers.'],
+      phrasesYouCouldHaveSaid:
+        coachingReport.phrasesYouCouldHaveSaid.length > 0
+          ? coachingReport.phrasesYouCouldHaveSaid
+          : [
+              '"Based on my research, the market range is X-Y."',
+              '"I have another offer that\'s hard to ignore."',
+            ],
+      tacticsYouUsed:
+        coachingReport.tacticsYouUsed.length > 0
+          ? coachingReport.tacticsYouUsed
+          : ['Anchoring', 'Counter-offer'],
       totalFillerWords: coachingReport.totalFillerWords,
       advice: coachingReport.advice,
     });
@@ -230,14 +273,36 @@ export default function Home() {
       <div ref={viewRef} className="fade-in">
         {/* SCENARIO SELECTOR */}
         {view === 'select' && (
-          <ScenarioSelector onSelect={handleSelectScenario} selectedId={scenarioId} />
+          <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+              <AvatarProviderToggle value={avatarProvider} onChange={setAvatarProvider} />
+            </div>
+            <ScenarioSelector
+              onSelect={handleSelectScenario}
+              selectedId={scenarioId}
+              provider={avatarProvider}
+            />
+          </>
         )}
 
         {/* NEGOTIATION VIEW */}
         {view === 'negotiate' && (
           <div style={{ padding: '0.5rem 0' }}>
-            {/* 3D Avatar */}
-            <AvatarCanvas emotion={currentEmotion} isSpeaking={isAiSpeaking} />
+            {/* Counterpart avatar + 3D emotion canvas */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+              {scenarioId && (
+                <div style={{ flexShrink: 0, paddingTop: '0.5rem' }}>
+                  <AvatarDicebear
+                    config={getCounterpartAvatar(scenarioId, avatarProvider)}
+                    size={72}
+                    showGlow={isAiSpeaking}
+                  />
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <AvatarCanvas emotion={currentEmotion} isSpeaking={isAiSpeaking} />
+              </div>
+            </div>
 
             {/* AI Speech Bubble */}
             {aiResponse && (
@@ -265,7 +330,11 @@ export default function Home() {
                   }}
                 >
                   {isAiSpeaking ? '🔵 Speaking...' : '🤖 AI'}
-                  {isLoading && <span style={{ color: 'var(--yellow)', fontSize: '0.7rem' }}>Processing your turn...</span>}
+                  {isLoading && (
+                    <span style={{ color: 'var(--yellow)', fontSize: '0.7rem' }}>
+                      Processing your turn...
+                    </span>
+                  )}
                 </div>
                 {aiResponse}
               </div>
@@ -302,7 +371,14 @@ export default function Home() {
                   overflowY: 'auto',
                 }}
               >
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--text-muted)',
+                    marginBottom: '0.5rem',
+                    fontWeight: 500,
+                  }}
+                >
                   📝 Transcript ({turns.length} turn{turns.length !== 1 ? 's' : ''})
                 </div>
                 {turns.map((t, i) => (
@@ -311,8 +387,7 @@ export default function Home() {
                       <strong>You:</strong> {t.userText}
                     </div>
                     <div style={{ color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                      <strong>AI</strong>{' '}
-                      <EmotionBadge emotion={t.emotion} />
+                      <strong>AI</strong> <EmotionBadge emotion={t.emotion} />
                       {t.aiText}
                     </div>
                   </div>
@@ -336,10 +411,25 @@ export default function Home() {
             )}
 
             {/* Controls */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginTop: '0.75rem',
+              }}
+            >
               <RecordButton onTranscript={handleTranscript} disabled={isLoading} />
 
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.75rem',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}
+              >
                 <button
                   onClick={handleEndNegotiation}
                   disabled={turns.length === 0}
@@ -376,9 +466,7 @@ export default function Home() {
         )}
 
         {/* COACHING VIEW */}
-        {view === 'coaching' && (
-          <CoachingReport report={report} onRestart={handleRestart} />
-        )}
+        {view === 'coaching' && <CoachingReport report={report} onRestart={handleRestart} />}
       </div>
     </div>
   );
@@ -410,5 +498,3 @@ function EmotionBadge({ emotion }: { emotion: string }) {
     </span>
   );
 }
-
-

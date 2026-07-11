@@ -49,27 +49,32 @@
 export const KILLER_FEATURES = [
   {
     title: 'Emotional Intelligence',
-    description: 'Avatar reacts to YOUR words in real time. Skeptical when you lowball. Impressed when you use data. Frustrated when you waste time.',
+    description:
+      'Avatar reacts to YOUR words in real time. Skeptical when you lowball. Impressed when you use data. Frustrated when you waste time.',
     icon: '🧠',
   },
   {
     title: 'Lip-Sync Precision',
-    description: 'Every word the AI speaks is perfectly matched by the avatar\'s mouth movements. OVR Lip Sync from audio waveform.',
+    description:
+      "Every word the AI speaks is perfectly matched by the avatar's mouth movements. OVR Lip Sync from audio waveform.",
     icon: '👄',
   },
   {
     title: 'Body Language',
-    description: 'Crossed arms, leaning forward, nodding, head shakes — animations triggered by AI sentiment, not random.',
+    description:
+      'Crossed arms, leaning forward, nodding, head shakes — animations triggered by AI sentiment, not random.',
     icon: '🫴',
   },
   {
     title: 'Real-Time Coaching',
-    description: 'After every session: score, missed opportunities, specific phrases you should have said, filler word count.',
+    description:
+      'After every session: score, missed opportunities, specific phrases you should have said, filler word count.',
     icon: '📊',
   },
   {
     title: 'Muscle Memory',
-    description: 'Practice the same scenario until your negotiation instincts are automatic. Track improvement over time.',
+    description:
+      'Practice the same scenario until your negotiation instincts are automatic. Track improvement over time.',
     icon: '💪',
   },
 ];

@@ -14,25 +14,29 @@ export const MVP_DELIVERABLE = {
     {
       id: 1,
       title: 'Voice Loop',
-      description: 'Push-to-talk. User speaks, Groq transcribes, Llama responds, ElevenLabs speaks back. <2s round-trip.',
+      description:
+        'Push-to-talk. User speaks, Groq transcribes, Llama responds, ElevenLabs speaks back. <2s round-trip.',
       status: '✅ BUILDING',
     },
     {
       id: 2,
       title: '3D Avatar with Lip-Sync',
-      description: 'Ready Player Me avatar in React Three Fiber. OVR Lip Sync matches mouth to every word.',
+      description:
+        'Ready Player Me avatar in React Three Fiber. OVR Lip Sync matches mouth to every word.',
       status: '🔧 READY TO BUILD',
     },
     {
       id: 3,
       title: '3 Emotional Reactions',
-      description: 'Skeptical (raised eyebrow). Frustrated (frown, crossed arms). Happy (smile, nod). Driven by AI sentiment.',
+      description:
+        'Skeptical (raised eyebrow). Frustrated (frown, crossed arms). Happy (smile, nod). Driven by AI sentiment.',
       status: '✅ BUILT',
     },
     {
       id: 4,
       title: '3 Scenarios',
-      description: 'Salary negotiation (medium). Startup valuation (hard). Car buying (easy). Full system prompts.',
+      description:
+        'Salary negotiation (medium). Startup valuation (hard). Car buying (easy). Full system prompts.',
       status: '🔧 NEEDS PROMPTS',
     },
     {

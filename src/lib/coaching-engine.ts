@@ -13,8 +13,8 @@ export interface CoachingTurn {
   userText: string;
   aiText: string;
   emotion: Emotion;
-  score: number;       // -5 to +5 for this turn
-  note: string;        // what happened this turn
+  score: number; // -5 to +5 for this turn
+  note: string; // what happened this turn
   fillerWords: string[];
   tacticUsed: string | null;
   missedTactic: string | null;
@@ -22,12 +22,12 @@ export interface CoachingTurn {
 }
 
 export interface CoachingReport {
-  overallScore: number;       // 0-10
+  overallScore: number; // 0-10
   breakdown: {
-    outcome: number;          // 0-3
-    tactics: number;          // 0-3
-    delivery: number;         // 0-2
-    adaptability: number;     // 0-2
+    outcome: number; // 0-3
+    tactics: number; // 0-3
+    delivery: number; // 0-2
+    adaptability: number; // 0-2
   };
   whatYouDidWell: string[];
   missedOpportunities: string[];
@@ -42,14 +42,26 @@ export interface CoachingReport {
   totalFillerWords: number;
   keyMoments: {
     timestamp: number;
-    type: 'anchor' | 'counteroffer' | 'concession' | 'silence' | 'good-tactic' | 'missed-opportunity';
+    type:
+      'anchor' | 'counteroffer' | 'concession' | 'silence' | 'good-tactic' | 'missed-opportunity';
     description: string;
     userText: string;
   }[];
   advice: string;
 }
 
-const FILLER_WORDS = ['um', 'uh', 'like', 'you know', 'sort of', 'kind of', 'i mean', 'actually', 'basically', 'literally'];
+const FILLER_WORDS = [
+  'um',
+  'uh',
+  'like',
+  'you know',
+  'sort of',
+  'kind of',
+  'i mean',
+  'actually',
+  'basically',
+  'literally',
+];
 
 export function generateCoachingReport(turns: CoachingTurn[]): CoachingReport {
   let totalScore = 0;
@@ -85,7 +97,7 @@ export function generateCoachingReport(turns: CoachingTurn[]): CoachingReport {
     // Filler word analysis
     for (const word of turn.fillerWords) {
       totalFillerWords++;
-      const existing = fillerAnalysis.find(f => f.word === word);
+      const existing = fillerAnalysis.find((f) => f.word === word);
       if (existing) {
         existing.count++;
       } else {
@@ -113,23 +125,39 @@ export function generateCoachingReport(turns: CoachingTurn[]): CoachingReport {
 
   // Calculate breakdown scores
   const avgTurnScore = turns.length > 0 ? totalScore / turns.length : 0;
-  const outcome = Math.min(3, Math.max(0, Math.round((avgTurnScore + 5) / 10 * 3)));
+  const outcome = Math.min(3, Math.max(0, Math.round(((avgTurnScore + 5) / 10) * 3)));
   const tactics = Math.min(3, Math.max(0, Math.round(tacticsYouUsed.length / 2)));
-  const delivery = Math.min(2, Math.max(0, totalFillerWords <= 3 ? 2 : totalFillerWords <= 8 ? 1 : 0));
-  const adaptability = Math.min(2, Math.max(0, Math.round((turns.length >= 5 ? 1 : 0) + (missedOpportunities.length <= 2 ? 1 : 0))));
+  const delivery = Math.min(
+    2,
+    Math.max(0, totalFillerWords <= 3 ? 2 : totalFillerWords <= 8 ? 1 : 0),
+  );
+  const adaptability = Math.min(
+    2,
+    Math.max(
+      0,
+      Math.round((turns.length >= 5 ? 1 : 0) + (missedOpportunities.length <= 2 ? 1 : 0)),
+    ),
+  );
 
-  const overallScore = Math.min(10, Math.round((outcome + tactics + delivery + adaptability) / 8 * 10));
+  const overallScore = Math.min(
+    10,
+    Math.round(((outcome + tactics + delivery + adaptability) / 8) * 10),
+  );
 
-  // Generate advice
-  let advice = '';
+  // Generate advice — each branch assigns exactly once
+  let advice: string;
   if (overallScore >= 8) {
-    advice = 'Excellent negotiation! You used multiple tactics effectively, managed your delivery, and adapted to the AI\'s moves. Focus on polishing your remaining weak spots.';
+    advice =
+      "Excellent negotiation! You used multiple tactics effectively, managed your delivery, and adapted to the AI's moves. Focus on polishing your remaining weak spots.";
   } else if (overallScore >= 6) {
-    advice = 'Solid performance. You have the basics down but need to work on specific areas. Focus on using data-backed anchors and handling silence better.';
+    advice =
+      'Solid performance. You have the basics down but need to work on specific areas. Focus on using data-backed anchors and handling silence better.';
   } else if (overallScore >= 4) {
-    advice = 'You have potential but need practice. Focus on the fundamentals: always counter the first offer, use data to back your arguments, and don\'t accept immediately.';
+    advice =
+      "You have potential but need practice. Focus on the fundamentals: always counter the first offer, use data to back your arguments, and don't accept immediately.";
   } else {
-    advice = 'This is a starting point. Everyone begins somewhere. Focus on one thing: don\'t accept the first offer. Always counter with a specific, justified number.';
+    advice =
+      "This is a starting point. Everyone begins somewhere. Focus on one thing: don't accept the first offer. Always counter with a specific, justified number.";
   }
 
   return {
@@ -154,10 +182,10 @@ export function analyzeTurn(
   userText: string,
   aiText: string,
   emotion: Emotion,
-  turnNumber: number
+  turnNumber: number,
 ): CoachingTurn {
   const lower = userText.toLowerCase();
-  const fillerWords = FILLER_WORDS.filter(fw => {
+  const fillerWords = FILLER_WORDS.filter((fw) => {
     const regex = new RegExp(`\\b${fw}\\b`, 'gi');
     return regex.test(lower);
   });
@@ -207,7 +235,11 @@ export function analyzeTurn(
     aiText,
     emotion,
     score: score + fillerPenalty,
-    note: tacticUsed ? `Great ${tacticUsed}` : missedTactic ? `Missed: ${missedTactic}` : 'Neutral turn',
+    note: tacticUsed
+      ? `Great ${tacticUsed}`
+      : missedTactic
+        ? `Missed: ${missedTactic}`
+        : 'Neutral turn',
     fillerWords,
     tacticUsed,
     missedTactic,

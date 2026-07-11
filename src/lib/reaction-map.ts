@@ -58,21 +58,24 @@ export const REACTION_MAP: UserAction[] = [
     example: '"That\'s ridiculous. No way."',
     avatarReaction: '😤 Tight jaw, narrows eyes',
     emotion: 'frustrated',
-    coachingNote: 'Dismissiveness without counter-offer kills negotiation. Always propose an alternative.',
+    coachingNote:
+      'Dismissiveness without counter-offer kills negotiation. Always propose an alternative.',
   },
   {
     type: 'Ultimatum',
     example: '"Take it or leave it."',
     avatarReaction: '😤 Leans back, raises both hands',
     emotion: 'frustrated',
-    coachingNote: 'Ultimatums early in negotiation signal inexperience. Save them for final offers.',
+    coachingNote:
+      'Ultimatums early in negotiation signal inexperience. Save them for final offers.',
   },
   {
     type: 'Threatening',
     example: '"I\'ll just go to your competitor."',
     avatarReaction: '😤 Flat expression, cold stare',
     emotion: 'frustrated',
-    coachingNote: 'Mentioning competition works ONCE, as leverage. Overuse makes you look difficult.',
+    coachingNote:
+      'Mentioning competition works ONCE, as leverage. Overuse makes you look difficult.',
   },
 
   // ─── SMART MOVES → AVATAR GETS HAPPY / RESPECTFUL ───
@@ -88,28 +91,32 @@ export const REACTION_MAP: UserAction[] = [
     example: '"I have another offer at $90K. Can you match?"',
     avatarReaction: '😊 Impressed nod, slight surprise',
     emotion: 'happy',
-    coachingNote: 'Leverage done right. You didn\'t threaten — you informed. This is power.',
+    coachingNote: "Leverage done right. You didn't threaten — you informed. This is power.",
   },
   {
     type: 'Creative trade-off',
     example: '"What if we meet at $80K with an extra week of vacation?"',
     avatarReaction: '😊 Warm smile, open posture',
     emotion: 'happy',
-    coachingNote: 'Excellent! Trading on multiple dimensions (salary + benefits) is advanced negotiation.',
+    coachingNote:
+      'Excellent! Trading on multiple dimensions (salary + benefits) is advanced negotiation.',
   },
   {
     type: 'Finding common ground',
-    example: '"I understand your budget constraints. Let\'s find a number that works for both of us."',
+    example:
+      '"I understand your budget constraints. Let\'s find a number that works for both of us."',
     avatarReaction: '😊 Genuine smile, relaxed shoulders',
     emotion: 'happy',
-    coachingNote: 'Empathy + problem-solving = master negotiator. You built rapport AND moved toward a deal.',
+    coachingNote:
+      'Empathy + problem-solving = master negotiator. You built rapport AND moved toward a deal.',
   },
   {
     type: 'Strategic silence',
     example: '(says nothing after hearing the offer, waits 5 seconds)',
     avatarReaction: '😊 Slight nod of respect, fills the silence with a better offer',
     emotion: 'happy',
-    coachingNote: 'Silence is a superpower. You let them feel the discomfort of their own offer. Brilliant.',
+    coachingNote:
+      'Silence is a superpower. You let them feel the discomfort of their own offer. Brilliant.',
   },
 ];
 
@@ -117,7 +124,7 @@ export const REACTION_MAP: UserAction[] = [
  * Get the avatar reaction for a specific user action type
  */
 export function getReaction(actionType: string): UserAction | undefined {
-  return REACTION_MAP.find(r => r.type === actionType);
+  return REACTION_MAP.find((r) => r.type === actionType);
 }
 
 /**

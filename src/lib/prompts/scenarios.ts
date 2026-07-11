@@ -30,7 +30,8 @@ export const SCENARIOS: Scenario[] = [
     difficulty: 'easy',
     userRole: 'Junior developer, first job out of bootcamp',
     aiRole: 'Friendly recruiter at mid-size tech company',
-    aiPersonality: 'Warm, encouraging, but has budget constraints. Wants to make you happy but can\'t go too high.',
+    aiPersonality:
+      "Warm, encouraging, but has budget constraints. Wants to make you happy but can't go too high.",
     stakes: '$75K base offer. You want $82K. Market range is $75-85K.',
     userBatna: 'You have 2 other interviews this week, no offers yet.',
     targetRange: [75000, 85000],
@@ -51,11 +52,18 @@ If they're aggressive, get defensive: "I'm trying to work with you here."`,
     difficulty: 'medium',
     userRole: 'Senior frontend engineer with 5 years experience + competing offer',
     aiRole: 'Hiring manager with strict budget approval process',
-    aiPersonality: 'Friendly but straight-talking. Has been through this many times. Respects data, dismisses bluffs.',
+    aiPersonality:
+      'Friendly but straight-talking. Has been through this many times. Respects data, dismisses bluffs.',
     stakes: '$155K base offer. You want $180K. You have a competing offer at $170K.',
     userBatna: 'You have a competing offer at $170K from a competitor.',
     targetRange: [155000, 185000],
-    tacticsAiWillUse: ['anchoring', 'limited-authority', 'bracketing', 'good-cop-bad-cop', 'silence'],
+    tacticsAiWillUse: [
+      'anchoring',
+      'limited-authority',
+      'bracketing',
+      'good-cop-bad-cop',
+      'silence',
+    ],
     systemPrompt: `You are a hiring manager at a well-funded Series B startup.
 You really want this candidate, but your budget is capped at $175K without VP approval.
 Start at $155K. When they counter, say: "That's above our band for this level."
@@ -72,7 +80,8 @@ Respect data-driven arguments. Dismiss vague ones politely.`,
     difficulty: 'hard',
     userRole: 'Early employee at a pre-IPO startup',
     aiRole: 'Founder/CTO who needs to conserve cash but wants you committed',
-    aiPersonality: 'Passionate about the mission, cash-poor, equity-rich. Will use the "we\'re a family" line.',
+    aiPersonality:
+      'Passionate about the mission, cash-poor, equity-rich. Will use the "we\'re a family" line.',
     stakes: '$120K + 0.5% equity. You want $140K + 1% equity.',
     userBatna: 'You have an offer from a public company at $150K (no equity upside).',
     targetRange: [120000, 145000],
@@ -93,8 +102,9 @@ If they use data or BATNA well, concede more gracefully.`,
     category: 'Salary',
     difficulty: 'hard',
     userRole: 'Employee with an outside offer, current boss wants you to stay',
-    aiRole: 'Your current manager who doesn\'t want to lose you',
-    aiPersonality: 'Friendly but defensive. Will use loyalty pressure, emotional appeals, and vague future promises.',
+    aiRole: "Your current manager who doesn't want to lose you",
+    aiPersonality:
+      'Friendly but defensive. Will use loyalty pressure, emotional appeals, and vague future promises.',
     stakes: 'Current $140K. Outside offer $180K. You want $175K to stay.',
     userBatna: 'You have a solid offer at $180K from a competitor.',
     targetRange: [140000, 180000],
@@ -118,7 +128,8 @@ If they're about to leave, make a last-ditch offer: "I'll find a way to get you 
     difficulty: 'easy',
     userRole: 'Technical co-founder building the product',
     aiRole: 'Business co-founder handling sales + fundraising',
-    aiPersonality: 'Confident, persuasive, has been working on the idea for 6 months. Wants 60% but can be flexible.',
+    aiPersonality:
+      'Confident, persuasive, has been working on the idea for 6 months. Wants 60% but can be flexible.',
     stakes: 'Equity split negotiation. You want 50/50. They want 60/40.',
     userBatna: 'You could build this alone with a freelancer for sales.',
     targetRange: [40, 60],
@@ -139,7 +150,8 @@ Respect technical founders who know their worth. Give more equity if they bring 
     difficulty: 'medium',
     userRole: 'First-time founder raising $500K',
     aiRole: 'Angel investor who likes the space but skeptical of first-time founders',
-    aiPersonality: 'Warm but cautious. Has been burned by first-time founders before. Likes traction over promises.',
+    aiPersonality:
+      'Warm but cautious. Has been burned by first-time founders before. Likes traction over promises.',
     stakes: '$500K at $5M cap vs $3M cap. Difference of millions in dilution.',
     userBatna: 'You have interest from 2 other angels at $4M cap.',
     targetRange: [3000000, 6000000],
@@ -165,7 +177,13 @@ Respect founders who know their metrics. Be dismissive of vague answers.`,
     stakes: '$5M raise at $20M post vs $15M post. Board seat. Liquidation preference.',
     userBatna: 'You have 2 other term sheets but less prestigious firms.',
     targetRange: [15000000, 25000000],
-    tacticsAiWillUse: ['anchoring', 'limited-authority', 'good-cop-bad-cop', 'scarcity', 'bracketing'],
+    tacticsAiWillUse: [
+      'anchoring',
+      'limited-authority',
+      'good-cop-bad-cop',
+      'scarcity',
+      'bracketing',
+    ],
     systemPrompt: `You are a VC partner at a top-tier firm evaluating a Series A investment.
 You like this company but want the best deal possible.
 Start the valuation conversation at $15M post: "Given your ARR, $15M feels right."
@@ -186,7 +204,8 @@ Respect data. Use silence. Test their conviction.`,
     difficulty: 'easy',
     userRole: 'Freelance designer with 3 years experience',
     aiRole: 'Startup founder hiring for a 3-month contract',
-    aiPersonality: 'Friendly but budget-conscious. Has hired freelancers before. Will try to get a discount.',
+    aiPersonality:
+      'Friendly but budget-conscious. Has hired freelancers before. Will try to get a discount.',
     stakes: 'They offer $100/hr. Your rate is $150/hr. 3-month contract = $96K total.',
     userBatna: 'You have another client at $140/hr who can give you 20hrs/week.',
     targetRange: [125, 160],
@@ -228,7 +247,8 @@ You can increase the budget, but only if they specifically ask and justify.`,
     difficulty: 'hard',
     userRole: 'Procurement manager negotiating $120K SaaS contract',
     aiRole: 'Vendor sales director defending their pricing',
-    aiPersonality: 'Polished, experienced, has done hundreds of enterprise deals. Will use every tactic.',
+    aiPersonality:
+      'Polished, experienced, has done hundreds of enterprise deals. Will use every tactic.',
     stakes: '$120K ACV. You want $90K with multi-year discount.',
     userBatna: 'You have a competitor quote at $95K (less features).',
     targetRange: [85000, 110000],
@@ -275,7 +295,7 @@ You can go to $44K but only if they walk away or have a competitor quote.`,
     userRole: 'Tenant looking at a $3,200 luxury 1BR apartment',
     aiRole: 'Property manager/landlord',
     aiPersonality: 'Professional, slightly aloof. Has 20 units. Can afford to wait.',
-    stakes: '$3,200/mo asking. You want $2,900. Tenant\'s market.',
+    stakes: "$3,200/mo asking. You want $2,900. Tenant's market.",
     userBatna: 'There are 3 comparable units in the building at $2,950-3,100.',
     targetRange: [2800, 3100],
     tacticsAiWillUse: ['anchoring', 'scarcity', 'future-promise', 'limited-authority'],
@@ -291,11 +311,11 @@ If they mention comparable units, check and potentially match.`,
 ];
 
 export function getScenario(id: string): Scenario | undefined {
-  return SCENARIOS.find(s => s.id === id);
+  return SCENARIOS.find((s) => s.id === id);
 }
 
 export function getScenariosByCategory(category: string): Scenario[] {
-  return SCENARIOS.filter(s => s.category === category);
+  return SCENARIOS.filter((s) => s.category === category);
 }
 
 export const CATEGORIES = [

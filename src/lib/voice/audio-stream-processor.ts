@@ -79,7 +79,7 @@ registerProcessor('audio_stream_processor', StreamProcessor);
 `;
 
 const script = new Blob([AudioStreamProcessorWorklet], {
-  type: "application/javascript",
+  type: 'application/javascript',
 });
 const src = URL.createObjectURL(script);
 export const AudioStreamProcessorWorkletSrc = src;

@@ -29,32 +29,60 @@ interface Pose {
 
 const POSES: Record<string, Pose> = {
   neutral: {
-    headTilt: 0, headY: 0, headRotX: 0,
-    leftBrowY: 0, leftBrowRot: 0,
-    rightBrowY: 0, rightBrowRot: 0,
-    eyeScaleY: 1, mouthWidth: 0.35, mouthOpen: 0.02,
-    color: '#d4c4b0', emissive: '#222233',
+    headTilt: 0,
+    headY: 0,
+    headRotX: 0,
+    leftBrowY: 0,
+    leftBrowRot: 0,
+    rightBrowY: 0,
+    rightBrowRot: 0,
+    eyeScaleY: 1,
+    mouthWidth: 0.35,
+    mouthOpen: 0.02,
+    color: '#d4c4b0',
+    emissive: '#222233',
   },
   skeptical: {
-    headTilt: 0.12, headY: 0, headRotX: -0.08,
-    leftBrowY: 0.35, leftBrowRot: -0.15,
-    rightBrowY: -0.1, rightBrowRot: 0.12,
-    eyeScaleY: 0.55, mouthWidth: 0.25, mouthOpen: 0.01,
-    color: '#c8b8a8', emissive: '#332233',
+    headTilt: 0.12,
+    headY: 0,
+    headRotX: -0.08,
+    leftBrowY: 0.35,
+    leftBrowRot: -0.15,
+    rightBrowY: -0.1,
+    rightBrowRot: 0.12,
+    eyeScaleY: 0.55,
+    mouthWidth: 0.25,
+    mouthOpen: 0.01,
+    color: '#c8b8a8',
+    emissive: '#332233',
   },
   frustrated: {
-    headTilt: -0.08, headY: -0.08, headRotX: 0.05,
-    leftBrowY: -0.25, leftBrowRot: 0.2,
-    rightBrowY: -0.25, rightBrowRot: -0.2,
-    eyeScaleY: 0.65, mouthWidth: 0.45, mouthOpen: 0.04,
-    color: '#b89890', emissive: '#442222',
+    headTilt: -0.08,
+    headY: -0.08,
+    headRotX: 0.05,
+    leftBrowY: -0.25,
+    leftBrowRot: 0.2,
+    rightBrowY: -0.25,
+    rightBrowRot: -0.2,
+    eyeScaleY: 0.65,
+    mouthWidth: 0.45,
+    mouthOpen: 0.04,
+    color: '#b89890',
+    emissive: '#442222',
   },
   happy: {
-    headTilt: 0.05, headY: 0.08, headRotX: 0.03,
-    leftBrowY: 0.18, leftBrowRot: -0.06,
-    rightBrowY: 0.18, rightBrowRot: 0.06,
-    eyeScaleY: 1.15, mouthWidth: 0.65, mouthOpen: 0.25,
-    color: '#d8c8a0', emissive: '#224422',
+    headTilt: 0.05,
+    headY: 0.08,
+    headRotX: 0.03,
+    leftBrowY: 0.18,
+    leftBrowRot: -0.06,
+    rightBrowY: 0.18,
+    rightBrowRot: 0.06,
+    eyeScaleY: 1.15,
+    mouthWidth: 0.65,
+    mouthOpen: 0.25,
+    color: '#d8c8a0',
+    emissive: '#224422',
   },
 };
 
@@ -75,7 +103,7 @@ export default function AvatarModel({ emotion = 'neutral', isSpeaking = false }:
 
   // Update target when emotion changes
   useEffect(() => {
-    target.current = { ...POSES[emotion] || POSES.neutral };
+    target.current = { ...(POSES[emotion] || POSES.neutral) };
   }, [emotion]);
 
   // ─── Mouth shape ─────────────────────────────────────────────────
@@ -184,21 +212,13 @@ export default function AvatarModel({ emotion = 'neutral', isSpeaking = false }:
       {/* ─── Neck ───────────────────────────────────────── */}
       <mesh position={[0, -2, 0]}>
         <cylinderGeometry args={[0.7, 0.9, 0.8, 12]} />
-        <meshPhysicalMaterial
-          color="#c0b0a0"
-          roughness={0.7}
-          metalness={0}
-        />
+        <meshPhysicalMaterial color="#c0b0a0" roughness={0.7} metalness={0} />
       </mesh>
 
       {/* ─── Shoulders ──────────────────────────────────── */}
       <mesh position={[0, -2.8, 0]}>
         <sphereGeometry args={[1.5, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshPhysicalMaterial
-          color="#1a1a2e"
-          roughness={0.8}
-          metalness={0.1}
-        />
+        <meshPhysicalMaterial color="#1a1a2e" roughness={0.8} metalness={0.1} />
       </mesh>
 
       {/* ─── Left Eye ───────────────────────────────────── */}
@@ -248,11 +268,7 @@ export default function AvatarModel({ emotion = 'neutral', isSpeaking = false }:
       {/* ─── Mouth ──────────────────────────────────────── */}
       <mesh ref={mouthRef} position={[0, -1.4, 1.65]} rotation={[0, 0, 0]}>
         <shapeGeometry args={[mouthShape]} />
-        <meshPhysicalMaterial
-          color="#5a3a2a"
-          roughness={0.6}
-          metalness={0}
-        />
+        <meshPhysicalMaterial color="#5a3a2a" roughness={0.6} metalness={0} />
       </mesh>
     </group>
   );

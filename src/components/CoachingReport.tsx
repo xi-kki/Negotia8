@@ -61,7 +61,14 @@ export default function CoachingReport({ report, onRestart }: Props) {
       </div>
 
       {/* Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '1rem',
+          marginBottom: '2rem',
+        }}
+      >
         {Object.entries(report.breakdown).map(([key, val]) => (
           <div
             key={key}
@@ -72,11 +79,17 @@ export default function CoachingReport({ report, onRestart }: Props) {
               textAlign: 'center',
             }}
           >
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+            <div
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--text-muted)',
+                textTransform: 'capitalize',
+              }}
+            >
               {key}
             </div>
             <div style={{ fontSize: '1.5rem', fontWeight: 600, color: getScoreColor(val) }}>
-              {val}/{(key === 'outcome' || key === 'tactics') ? 3 : 2}
+              {val}/{key === 'outcome' || key === 'tactics' ? 3 : 2}
             </div>
           </div>
         ))}

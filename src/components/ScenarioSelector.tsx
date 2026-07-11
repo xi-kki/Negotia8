@@ -11,18 +11,90 @@ export interface ScenarioOption {
 }
 
 const SCENARIOS: ScenarioOption[] = [
-  { id: 'salary-entry', title: 'Entry-Level Salary', category: 'Salary', difficulty: 'easy', icon: '💼' },
-  { id: 'salary-senior', title: 'Senior Counter-Offer', category: 'Salary', difficulty: 'medium', icon: '💼' },
-  { id: 'salary-equity', title: 'Equity vs Cash', category: 'Salary', difficulty: 'hard', icon: '💼' },
-  { id: 'salary-counteroffer', title: 'Employer Counteroffer', category: 'Salary', difficulty: 'hard', icon: '💼' },
-  { id: 'fundraising-cofounder', title: 'Co-Founder Equity Split', category: 'Fundraising', difficulty: 'easy', icon: '🚀' },
-  { id: 'fundraising-preseed', title: 'Pre-Seed SAFE', category: 'Fundraising', difficulty: 'medium', icon: '🚀' },
-  { id: 'fundraising-series-a', title: 'Series A Term Sheet', category: 'Fundraising', difficulty: 'hard', icon: '🚀' },
-  { id: 'freelance-rate', title: 'Freelance Rate', category: 'Freelance', difficulty: 'easy', icon: '🤝' },
-  { id: 'scope-creep', title: 'Scope Creep', category: 'Freelance', difficulty: 'medium', icon: '🤝' },
-  { id: 'vendor-pricing', title: 'B2B SaaS Pricing', category: 'Sales', difficulty: 'hard', icon: '🤝' },
-  { id: 'car-buying', title: 'Car Dealership', category: 'Consumer', difficulty: 'easy', icon: '🛒' },
-  { id: 'rent-negotiation', title: 'Rent Negotiation', category: 'Consumer', difficulty: 'medium', icon: '🛒' },
+  {
+    id: 'salary-entry',
+    title: 'Entry-Level Salary',
+    category: 'Salary',
+    difficulty: 'easy',
+    icon: '💼',
+  },
+  {
+    id: 'salary-senior',
+    title: 'Senior Counter-Offer',
+    category: 'Salary',
+    difficulty: 'medium',
+    icon: '💼',
+  },
+  {
+    id: 'salary-equity',
+    title: 'Equity vs Cash',
+    category: 'Salary',
+    difficulty: 'hard',
+    icon: '💼',
+  },
+  {
+    id: 'salary-counteroffer',
+    title: 'Employer Counteroffer',
+    category: 'Salary',
+    difficulty: 'hard',
+    icon: '💼',
+  },
+  {
+    id: 'fundraising-cofounder',
+    title: 'Co-Founder Equity Split',
+    category: 'Fundraising',
+    difficulty: 'easy',
+    icon: '🚀',
+  },
+  {
+    id: 'fundraising-preseed',
+    title: 'Pre-Seed SAFE',
+    category: 'Fundraising',
+    difficulty: 'medium',
+    icon: '🚀',
+  },
+  {
+    id: 'fundraising-series-a',
+    title: 'Series A Term Sheet',
+    category: 'Fundraising',
+    difficulty: 'hard',
+    icon: '🚀',
+  },
+  {
+    id: 'freelance-rate',
+    title: 'Freelance Rate',
+    category: 'Freelance',
+    difficulty: 'easy',
+    icon: '🤝',
+  },
+  {
+    id: 'scope-creep',
+    title: 'Scope Creep',
+    category: 'Freelance',
+    difficulty: 'medium',
+    icon: '🤝',
+  },
+  {
+    id: 'vendor-pricing',
+    title: 'B2B SaaS Pricing',
+    category: 'Sales',
+    difficulty: 'hard',
+    icon: '🤝',
+  },
+  {
+    id: 'car-buying',
+    title: 'Car Dealership',
+    category: 'Consumer',
+    difficulty: 'easy',
+    icon: '🛒',
+  },
+  {
+    id: 'rent-negotiation',
+    title: 'Rent Negotiation',
+    category: 'Consumer',
+    difficulty: 'medium',
+    icon: '🛒',
+  },
 ];
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -38,11 +110,9 @@ interface Props {
 
 export default function ScenarioSelector({ onSelect, selectedId }: Props) {
   const [category, setCategory] = useState<string | null>(null);
-  const categories = [...new Set(SCENARIOS.map(s => s.category))];
+  const categories = [...new Set(SCENARIOS.map((s) => s.category))];
 
-  const filtered = category
-    ? SCENARIOS.filter(s => s.category === category)
-    : SCENARIOS;
+  const filtered = category ? SCENARIOS.filter((s) => s.category === category) : SCENARIOS;
 
   return (
     <div style={{ padding: '1.5rem' }}>
@@ -60,7 +130,7 @@ export default function ScenarioSelector({ onSelect, selectedId }: Props) {
         >
           All
         </button>
-        {categories.map(cat => (
+        {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setCategory(cat)}
@@ -79,7 +149,7 @@ export default function ScenarioSelector({ onSelect, selectedId }: Props) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        {filtered.map(s => (
+        {filtered.map((s) => (
           <button
             key={s.id}
             onClick={() => onSelect(s.id)}
@@ -96,8 +166,11 @@ export default function ScenarioSelector({ onSelect, selectedId }: Props) {
               fontSize: '0.9rem',
               transition: 'all 0.15s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = selectedId === s.id ? 'var(--bg-hover)' : 'var(--bg-card)')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                selectedId === s.id ? 'var(--bg-hover)' : 'var(--bg-card)')
+            }
           >
             <span style={{ fontSize: '1.2rem' }}>{s.icon}</span>
             <div style={{ flex: 1 }}>

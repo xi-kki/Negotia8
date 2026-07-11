@@ -10,19 +10,19 @@
 export interface InteractionTurn {
   user: {
     text: string;
-    tactic: string;       // what the user did (weak anchor, data counter, etc.)
+    tactic: string; // what the user did (weak anchor, data counter, etc.)
     offer?: number;
     fillerWords: number;
   };
   avatar: {
-    expression: string;   // what they see
+    expression: string; // what they see
     bodyLanguage: string; // posture
-    voiceTone: string;    // how the AI delivers the line
-    text: string;         // what they hear
+    voiceTone: string; // how the AI delivers the line
+    text: string; // what they hear
   };
   coaching: {
-    score: number;        // -5 to +5 for this turn
-    note: string;         // immediate feedback
+    score: number; // -5 to +5 for this turn
+    note: string; // immediate feedback
   };
 }
 
@@ -69,11 +69,11 @@ export interface InteractionTurn {
 
 export const INTERACTION_TIMING = {
   // Real-time targets for natural conversation
-  avatarReactionDelay: 300,    // ms — avatar reacts BEFORE speaking
-  aiResponseLatency: 800,      // ms — total STT → AI → TTS
-  lipSyncLatency: 50,          // ms — imperceptible
-  expressionHoldMin: 1000,     // ms — minimum expression display
-  expressionHoldMax: 3000,     // ms — max before blending back
-  idleBreathInterval: 4000,    // ms — breathing loop
-  blinkInterval: 3500,         // ms — average between blinks
+  avatarReactionDelay: 300, // ms — avatar reacts BEFORE speaking
+  aiResponseLatency: 800, // ms — total STT → AI → TTS
+  lipSyncLatency: 50, // ms — imperceptible
+  expressionHoldMin: 1000, // ms — minimum expression display
+  expressionHoldMax: 3000, // ms — max before blending back
+  idleBreathInterval: 4000, // ms — breathing loop
+  blinkInterval: 3500, // ms — average between blinks
 };

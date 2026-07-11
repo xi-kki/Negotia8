@@ -6,7 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "check-all": "npm run lint && npm run format:check && npm run build"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,md,yaml,yml,css}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",
@@ -20,10 +30,20 @@
     "three": "^0.160.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.5",
     "tsx": "^4.19.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.63.0"
   }
 }

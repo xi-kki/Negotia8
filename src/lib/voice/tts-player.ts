@@ -1,6 +1,6 @@
 /**
  * TTS Player for Negotia8
- * 
+ *
  * Strategy:
  * 1. Try Groq PlayAI TTS API (natural voice)
  * 2. Fallback: browser Web Speech API (always works, no key needed)
@@ -103,15 +103,16 @@ async function tryBrowserTTS(text: string): Promise<void> {
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    
+
     // Try to find a good English voice
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => 
-      v.lang.startsWith('en') && v.name.includes('Female')
-    ) || voices.find(v => v.lang.startsWith('en')) || null;
-    
+    const preferredVoice =
+      voices.find((v) => v.lang.startsWith('en') && v.name.includes('Female')) ||
+      voices.find((v) => v.lang.startsWith('en')) ||
+      null;
+
     if (preferredVoice) utterance.voice = preferredVoice;
-    
+
     utterance.rate = 1.1;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
@@ -146,13 +147,13 @@ export async function stopSpeaking(): Promise<void> {
     }
     currentSource = null;
   }
-  
+
   // Stop browser speech
   if (speechSynthesisUtterance && window.speechSynthesis) {
     window.speechSynthesis.cancel();
     speechSynthesisUtterance = null;
   }
-  
+
   isPlaying = false;
 }
 

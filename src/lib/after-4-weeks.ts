@@ -61,7 +61,7 @@ export const AFTER_4_WEEKS = {
         ✅ 50 beta users testing
         ✅ First NPS scores coming in
       `,
-      feel: 'Real people are using it. You\'re getting feedback. The iteration cycle has begun.',
+      feel: "Real people are using it. You're getting feedback. The iteration cycle has begun.",
     },
   ],
 

@@ -15,7 +15,7 @@ interface Props {
 /**
  * 3D Avatar with emotional expressions.
  * Uses React Three Fiber with dynamic SSR-safe import.
- * 
+ *
  * Emotions:
  * 😏 skeptical — raised eyebrow, head tilt, squint
  * 😤 frustrated — lowered brows, frown, tense
@@ -136,9 +136,13 @@ function Waveform() {
 
 function formatter(emotion: string): { icon: string; color: string } {
   switch (emotion) {
-    case 'skeptical': return { icon: '😏', color: '#eab308' };
-    case 'frustrated': return { icon: '😤', color: '#ef4444' };
-    case 'happy': return { icon: '😊', color: '#22c55e' };
-    default: return { icon: '😐', color: '#8888a0' };
+    case 'skeptical':
+      return { icon: '😏', color: '#eab308' };
+    case 'frustrated':
+      return { icon: '😤', color: '#ef4444' };
+    case 'happy':
+      return { icon: '😊', color: '#22c55e' };
+    default:
+      return { icon: '😐', color: '#8888a0' };
   }
 }

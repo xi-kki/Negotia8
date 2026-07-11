@@ -11,16 +11,18 @@ interface Props {
 
 /**
  * Video-based talking avatar.
- * 
+ *
  * Takes audio from the AI response → sends to SadTalker server →
  * plays the generated talking face video.
- * 
+ *
  * Falls back to the 3D avatar if the server is unreachable.
  */
 export default function TalkingAvatar({ audioBlob, isProcessing, onReady, fallback }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [serverStatus, setServerStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
+  const [serverStatus, setServerStatus] = useState<'checking' | 'available' | 'unavailable'>(
+    'checking',
+  );
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Check if SadTalker server is running
@@ -42,20 +44,20 @@ export default function TalkingAvatar({ audioBlob, isProcessing, onReady, fallba
   // When audio is provided, generate talking video
   useEffect(() => {
     if (!audioBlob || serverStatus !== 'available') return;
-    
+
     const generate = async () => {
       setIsGenerating(true);
       try {
         const audioBase64 = await blobToBase64(audioBlob);
-        
+
         const res = await fetch('http://localhost:8765/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ audio: audioBase64.split(',')[1] }),
         });
-        
+
         if (!res.ok) throw new Error('Generation failed');
-        
+
         const data = await res.json();
         setVideoUrl(`http://localhost:8765${data.video_url}`);
         onReady?.();
@@ -65,7 +67,7 @@ export default function TalkingAvatar({ audioBlob, isProcessing, onReady, fallba
         setIsGenerating(false);
       }
     };
-    
+
     generate();
   }, [audioBlob, serverStatus, onReady]);
 
@@ -146,7 +148,14 @@ export default function TalkingAvatar({ audioBlob, isProcessing, onReady, fallba
           gap: '0.3rem',
         }}
       >
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: serverStatus === 'available' ? 'var(--green)' : 'var(--text-muted)' }} />
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: serverStatus === 'available' ? 'var(--green)' : 'var(--text-muted)',
+          }}
+        />
         {serverStatus === 'available' ? 'AI Avatar' : '3D Fallback'}
       </div>
     </div>

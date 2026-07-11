@@ -1,4 +1,4 @@
-import { AudioStreamProcessorWorkletSrc } from "./audio-stream-processor";
+import { AudioStreamProcessorWorkletSrc } from './audio-stream-processor';
 
 /**
  * Plays audio streams received in raw PCM16 chunks from the browser
@@ -24,30 +24,30 @@ export class WavStreamPlayer {
 
   async connect() {
     this.context = new AudioContext({ sampleRate: this.sampleRate });
-    if (this.context.state === "suspended") {
+    if (this.context.state === 'suspended') {
       await this.context.resume();
     }
     try {
       await this.context.audioWorklet.addModule(AudioStreamProcessorWorkletSrc);
-    } catch (_) {
-      throw new Error("Could not add audioWorklet module");
+    } catch (err) {
+      throw new Error('Could not add audioWorklet module', { cause: err });
     }
     return true;
   }
 
   private _start() {
     if (!this.context) {
-      throw new Error("Not connected, please call .connect() first");
+      throw new Error('Not connected, please call .connect() first');
     }
-    const streamNode = new AudioWorkletNode(this.context, "audio_stream_processor");
+    const streamNode = new AudioWorkletNode(this.context, 'audio_stream_processor');
     streamNode.connect(this.context.destination);
     streamNode.port.onmessage = (e) => {
       const { event } = e.data;
-      if (event === "stop") {
+      if (event === 'stop') {
         this.onEndedCallback?.();
         streamNode.disconnect();
         this.stream = null;
-      } else if (event === "offset") {
+      } else if (event === 'offset') {
         const { requestId, trackId, offset } = e.data;
         const currentTime = offset / this.sampleRate;
         this.trackSampleOffsets[requestId] = { trackId, offset, currentTime };
@@ -57,9 +57,9 @@ export class WavStreamPlayer {
     return true;
   }
 
-  add16BitPCM(arrayBuffer: ArrayBuffer | Int16Array, trackId = "default") {
-    if (typeof trackId !== "string") {
-      throw new Error("trackId must be a string");
+  add16BitPCM(arrayBuffer: ArrayBuffer | Int16Array, trackId = 'default') {
+    if (typeof trackId !== 'string') {
+      throw new Error('trackId must be a string');
     }
     if (this.interruptedTrackIds[trackId]) {
       return;
@@ -73,12 +73,12 @@ export class WavStreamPlayer {
     } else if (arrayBuffer instanceof ArrayBuffer) {
       buffer = new Int16Array(arrayBuffer);
     } else {
-      throw new Error("argument must be Int16Array or ArrayBuffer");
+      throw new Error('argument must be Int16Array or ArrayBuffer');
     }
     if (!this.stream) {
-      throw new Error("Not connected, please call .connect() first");
+      throw new Error('Not connected, please call .connect() first');
     }
-    this.stream.port.postMessage({ event: "write", buffer, trackId });
+    this.stream.port.postMessage({ event: 'write', buffer, trackId });
     return buffer;
   }
 
@@ -86,7 +86,7 @@ export class WavStreamPlayer {
     if (!this.stream) return null;
     const requestId = crypto.randomUUID();
     this.stream.port.postMessage({
-      event: interrupt ? "interrupt" : "offset",
+      event: interrupt ? 'interrupt' : 'offset',
       requestId,
     });
     let trackSampleOffset: {
