@@ -133,6 +133,18 @@ button {
   }
 }
 
+/* ─── Streaming text cursor ────────────── */
+.cursor-blink {
+  animation: blink 0.7s step-end infinite;
+  color: var(--accent);
+  font-weight: 300;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* ─── Scrollbar styling ───────────────────── */
 ::-webkit-scrollbar {
   width: 6px;

@@ -316,7 +316,7 @@ export default function Home() {
             />
 
             {/* AI Speech Bubble */}
-            {aiResponse && (
+            {(aiResponse || streamingText) && (
               <div
                 style={{
                   background: 'var(--bg-card)',
@@ -355,7 +355,8 @@ export default function Home() {
                     </span>
                   )}
                 </div>
-                {aiResponse}
+                {streamingText || aiResponse}
+                {streamingText && <span className="cursor-blink">|</span>}
               </div>
             )}
 
