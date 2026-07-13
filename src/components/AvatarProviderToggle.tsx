@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { User, Palette } from 'lucide-react';
 import type { AvatarProvider } from '@/lib/avatar-utils';
 
 const STORAGE_KEY = 'negoti8-avatar-provider';
@@ -57,13 +58,13 @@ export default function AvatarProviderToggle({ value, onChange }: Props) {
       <ToggleOption
         active={value === 'uifaces'}
         onClick={() => onChange('uifaces')}
-        icon="🧑"
+        icon={<User size={13} />}
         label="Realistic"
       />
       <ToggleOption
         active={value === 'dicebear'}
         onClick={() => onChange('dicebear')}
-        icon="🎨"
+        icon={<Palette size={13} />}
         label="Illustrated"
       />
     </div>
@@ -78,7 +79,7 @@ function ToggleOption({
 }: {
   active: boolean;
   onClick: () => void;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
 }) {
   return (
@@ -99,7 +100,7 @@ function ToggleOption({
         whiteSpace: 'nowrap',
       }}
     >
-      <span>{icon}</span>
+      {icon}
       <span>{label}</span>
     </button>
   );
