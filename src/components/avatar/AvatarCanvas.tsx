@@ -1,127 +1,175 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
-import { Meh, Frown, Smile, Circle, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { CircleDot, Meh, Frown, Smile, Circle } from 'lucide-react';
 import type { Emotion } from './AvatarModel';
-import VoiceVisualizer from './VoiceVisualizer';
-
-const AvatarScene = dynamic(() => import('./AvatarScene'), { ssr: false });
+import AvatarDicebear from '../AvatarDicebear';
+import { getCounterpartAvatar } from '@/lib/avatar-utils';
 
 interface Props {
   emotion?: Emotion;
   isSpeaking?: boolean;
+  scenarioId?: string;
+  provider?: string;
 }
 
-const EMOTION_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = {
-  skeptical: { icon: <Meh size={12} />, color: '#eab308' },
-  frustrated: { icon: <Frown size={12} />, color: '#ef4444' },
-  happy: { icon: <Smile size={12} />, color: '#22c55e' },
-  neutral: { icon: <Circle size={12} />, color: '#8888a0' },
+const EMOTION_CONFIG: Record<
+  string,
+  { icon: React.ReactNode; color: string; glow: string; label: string }
+> = {
+  skeptical: {
+    icon: <Meh size={13} />,
+    color: '#eab308',
+    glow: '0 0 40px rgba(234, 179, 8, 0.35), 0 0 80px rgba(234, 179, 8, 0.15)',
+    label: 'Skeptical',
+  },
+  frustrated: {
+    icon: <Frown size={13} />,
+    color: '#ef4444',
+    glow: '0 0 40px rgba(239, 68, 68, 0.35), 0 0 80px rgba(239, 68, 68, 0.15)',
+    label: 'Frustrated',
+  },
+  happy: {
+    icon: <Smile size={13} />,
+    color: '#22c55e',
+    glow: '0 0 40px rgba(34, 197, 94, 0.35), 0 0 80px rgba(34, 197, 94, 0.15)',
+    label: 'Happy',
+  },
+  neutral: {
+    icon: <Circle size={13} />,
+    color: '#8888a0',
+    glow: '0 0 30px rgba(136, 136, 160, 0.15)',
+    label: 'Neutral',
+  },
 };
 
-export default function AvatarCanvas({ emotion = 'neutral', isSpeaking = false }: Props) {
+export default function AvatarCanvas({
+  emotion = 'neutral',
+  isSpeaking = false,
+  scenarioId = 'salary-entry',
+  provider = 'uifaces',
+}: Props) {
   const config = EMOTION_CONFIG[emotion] || EMOTION_CONFIG.neutral;
+  const avatarConfig = useMemo(
+    () => getCounterpartAvatar(scenarioId, provider, 128),
+    [scenarioId, provider],
+  );
 
   return (
     <div
       style={{
         width: '100%',
-        height: 340,
+        minHeight: 340,
         borderRadius: '16px',
         background: 'linear-gradient(180deg, #0a0a1a 0%, #14142a 50%, #1a1a2e 100%)',
-        border: '1px solid var(--border)',
+        border: `1px solid ${config.color}30`,
         position: 'relative',
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1.25rem',
+        padding: '2rem',
+        transition: 'border-color 0.4s ease',
       }}
     >
-      {/* Voice visualizer ring */}
-      <VoiceVisualizer isActive={isSpeaking} />
-      <Suspense fallback={<LoadingFallback />}>
-        <AvatarScene emotion={emotion} isSpeaking={isSpeaking} />
-      </Suspense>
+      {/* Background pulse when speaking */}
+      {isSpeaking && (
+        <div
+          className="avatar-speaking-pulse"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(circle at center, ${config.color}10 0%, transparent 70%)`,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
 
-      {/* Emotion label */}
+      {/* Avatar image with emotion glow */}
       <div
         style={{
-          position: 'absolute',
-          bottom: '0.75rem',
-          left: '0.75rem',
-          padding: '0.25rem 0.75rem',
-          borderRadius: '20px',
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(6px)',
-          fontSize: '0.78rem',
-          color: config.color,
-          textTransform: 'capitalize',
+          position: 'relative',
+          transition: 'filter 0.4s ease, transform 0.3s ease',
+          filter: isSpeaking
+            ? `drop-shadow(${config.glow})`
+            : `drop-shadow(${config.glow.replace('0.35', '0.2').replace('0.15', '0.08')})`,
+          transform: isSpeaking ? 'scale(1.04)' : 'scale(1)',
+        }}
+      >
+        <img
+          src={avatarConfig.url}
+          alt="Counterpart"
+          width={160}
+          height={160}
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: '50%',
+            border: `3px solid ${config.color}50`,
+            objectFit: 'cover',
+            background: 'var(--bg-card)',
+          }}
+        />
+
+        {/* Speaking ring animation */}
+        {isSpeaking && (
+          <div
+            className="avatar-ring"
+            style={{
+              position: 'absolute',
+              inset: -6,
+              borderRadius: '50%',
+              border: `2px solid ${config.color}40`,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </div>
+
+      {/* Emotion badge */}
+      <div
+        style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          zIndex: 10,
+          gap: '0.5rem',
+          padding: '0.4rem 1rem',
+          borderRadius: '20px',
+          background: `${config.color}15`,
+          border: `1px solid ${config.color}30`,
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          color: config.color,
+          textTransform: 'capitalize',
+          transition: 'all 0.3s ease',
         }}
       >
         {config.icon}
-        <span>{emotion}</span>
+        {config.label}
       </div>
 
       {/* Speaking indicator */}
       {isSpeaking && (
         <div
           style={{
-            position: 'absolute',
-            top: '0.75rem',
-            right: '0.75rem',
-            padding: '0.25rem 0.75rem',
-            borderRadius: '20px',
-            background: 'rgba(34, 197, 94, 0.15)',
-            backdropFilter: 'blur(6px)',
-            fontSize: '0.75rem',
-            color: 'var(--green)',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.3rem',
-            zIndex: 10,
+            gap: '0.5rem',
+            fontSize: '0.78rem',
+            color: config.color,
           }}
         >
-          <Waveform />
-          <span>Speaking</span>
+          <Waveform color={config.color} />
+          <span>Speaking...</span>
         </div>
       )}
     </div>
   );
 }
 
-function LoadingFallback() {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.9rem',
-      }}
-    >
-      <div
-        style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.5rem',
-        }}
-      >
-        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--accent)' }} />
-        <div>Loading avatar...</div>
-      </div>
-    </div>
-  );
-}
-
-/** Animated waveform bars for speaking indicator */
-function Waveform() {
+/** Animated waveform bars */
+function Waveform({ color = 'var(--green)' }: { color?: string }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', height: 16 }}>
       {[1, 2, 3, 4].map((i) => (
@@ -132,7 +180,7 @@ function Waveform() {
             width: 3,
             height: 8,
             borderRadius: '2px',
-            background: 'var(--green)',
+            background: color,
             animation: `waveform 0.6s ease-in-out infinite`,
             animationDelay: `${i * 0.1}s`,
           }}

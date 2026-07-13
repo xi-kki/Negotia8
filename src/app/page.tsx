@@ -5,9 +5,8 @@ import ScenarioSelector from '@/components/ScenarioSelector';
 import RecordButton from '@/components/RecordButton';
 import CoachingReport from '@/components/CoachingReport';
 import AvatarCanvas from '@/components/avatar/AvatarCanvas';
-import AvatarDicebear from '@/components/AvatarDicebear';
 import AvatarProviderToggle, { useAvatarProvider } from '@/components/AvatarProviderToggle';
-import { getCounterpartAvatar, preloadAvatars } from '@/lib/avatar-utils';
+import { preloadAvatars } from '@/lib/avatar-utils';
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
 import {
@@ -308,21 +307,13 @@ export default function Home() {
         {/* NEGOTIATION VIEW */}
         {view === 'negotiate' && (
           <div style={{ padding: '0.5rem 0' }}>
-            {/* Counterpart avatar + 3D emotion canvas */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-              {scenarioId && (
-                <div style={{ flexShrink: 0, paddingTop: '0.5rem' }}>
-                  <AvatarDicebear
-                    config={getCounterpartAvatar(scenarioId, avatarProvider)}
-                    size={72}
-                    showGlow={isAiSpeaking}
-                  />
-                </div>
-              )}
-              <div style={{ flex: 1 }}>
-                <AvatarCanvas emotion={currentEmotion} isSpeaking={isAiSpeaking} />
-              </div>
-            </div>
+            {/* Counterpart avatar with emotion */}
+            <AvatarCanvas
+              emotion={currentEmotion}
+              isSpeaking={isAiSpeaking}
+              scenarioId={scenarioId || undefined}
+              provider={avatarProvider}
+            />
 
             {/* AI Speech Bubble */}
             {aiResponse && (
