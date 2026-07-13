@@ -9,6 +9,7 @@ import AvatarProviderToggle, { useAvatarProvider } from '@/components/AvatarProv
 import { preloadAvatars } from '@/lib/avatar-utils';
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
+import { useVoiceAgent, type AgentState } from '@/lib/voice/useVoiceAgent';
 import {
   Mic,
   Bot,
@@ -19,6 +20,11 @@ import {
   RotateCcw,
   Square,
   ArrowLeft,
+  Radio,
+  Phone,
+  PhoneOff,
+  Volume2,
+  Loader2,
 } from 'lucide-react';
 import type { Emotion, Turn, CoachingReportData, ViewMode } from '@/types';
 
@@ -59,6 +65,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<CoachingReportData | null>(null);
   const [avatarProvider, setAvatarProvider] = useAvatarProvider();
+  const [streamingText, setStreamingText] = useState('');
+  const [voiceMode, setVoiceMode] = useState<'push' | 'auto'>('auto');
 
   const transcriptRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
@@ -100,6 +108,20 @@ export default function Home() {
       'rent-negotiation',
     ]);
   }, [avatarProvider]);
+
+  // Voice agent (auto mode)
+  const { agentState, isListening, isRecording, volume, isEnabled, toggle } = useVoiceAgent({
+    scenarioId: scenarioId || 'salary-entry',
+    turns,
+    onTurnComplete: (turn) => {
+      setTurns((prev) => [...prev, turn]);
+      setAiResponse(turn.aiText);
+      setStreamingText('');
+    },
+    onEmotionChange: setCurrentEmotion,
+    onAgentStateChange: () => {},
+    onTextChunk: (chunk) => setStreamingText((prev) => prev + chunk),
+  });
 
   // Animation class on view change
   useEffect(() => {
@@ -439,6 +461,16 @@ export default function Home() {
               </div>
             )}
 
+            {/* Agent state indicator */}
+            {voiceMode === 'auto' && (
+              <AgentStateIndicator
+                state={agentState}
+                volume={volume}
+                isListening={isListening}
+                isRecording={isRecording}
+              />
+            )}
+
             {/* Controls */}
             <div
               style={{
@@ -449,7 +481,78 @@ export default function Home() {
                 marginTop: '0.75rem',
               }}
             >
-              <RecordButton onTranscript={handleTranscript} disabled={isLoading} />
+              {/* Mode toggle */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '24px',
+                  padding: '0.2rem',
+                }}
+              >
+                <button
+                  onClick={() => setVoiceMode('auto')}
+                  style={{
+                    padding: '0.35rem 0.9rem',
+                    borderRadius: '20px',
+                    border: 'none',
+                    background: voiceMode === 'auto' ? 'var(--accent)' : 'transparent',
+                    color: voiceMode === 'auto' ? '#fff' : 'var(--text-muted)',
+                    fontSize: '0.78rem',
+                    fontWeight: voiceMode === 'auto' ? 600 : 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Radio size={12} /> Auto Listen
+                </button>
+                <button
+                  onClick={() => setVoiceMode('push')}
+                  style={{
+                    padding: '0.35rem 0.9rem',
+                    borderRadius: '20px',
+                    border: 'none',
+                    background: voiceMode === 'push' ? 'var(--accent)' : 'transparent',
+                    color: voiceMode === 'push' ? '#fff' : 'var(--text-muted)',
+                    fontSize: '0.78rem',
+                    fontWeight: voiceMode === 'push' ? 600 : 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Mic size={12} /> Push to Talk
+                </button>
+              </div>
+
+              {voiceMode === 'auto' ? (
+                <button
+                  onClick={toggle}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    border: `3px solid ${isEnabled ? 'var(--green)' : 'var(--accent)'}`,
+                    background: isEnabled ? 'var(--green)' : 'var(--bg-card)',
+                    color: '#fff',
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    boxShadow: isEnabled ? '0 0 20px rgba(34, 197, 94, 0.3)' : 'none',
+                  }}
+                >
+                  {isEnabled ? <PhoneOff size={28} /> : <Phone size={28} />}
+                </button>
+              ) : (
+                <RecordButton onTranscript={handleTranscript} disabled={isLoading} />
+              )}
 
               <div
                 style={{
@@ -533,5 +636,83 @@ function EmotionBadge({ emotion }: { emotion: string }) {
     >
       {emotion}
     </span>
+  );
+}
+
+/** Agent state indicator — shows what the voice agent is doing */
+function AgentStateIndicator({
+  state,
+  volume,
+  isListening,
+  isRecording,
+}: {
+  state: AgentState;
+  volume: number;
+  isListening: boolean;
+  isRecording: boolean;
+}) {
+  const config: Record<AgentState, { label: string; color: string; icon: React.ReactNode }>= {
+    idle: { label: 'Ready', color: 'var(--text-muted)', icon: <Radio size={14} /> },
+    listening: {
+      label: 'Listening...',
+      color: 'var(--green)',
+      icon: <Volume2 size={14} />,
+    },
+    thinking: {
+      label: 'Thinking...',
+      color: 'var(--yellow)',
+      icon: <Loader2 size={14} className="animate-spin" />,
+    },
+    speaking: {
+      label: 'Speaking...',
+      color: 'var(--accent)',
+      icon: <Bot size={14} />,
+    },
+  };
+
+  const c = config[state];
+
+  // Volume bars for listening state
+  const bars = Math.min(12, Math.floor(volume * 150));
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.6rem',
+        padding: '0.5rem 1rem',
+        borderRadius: '20px',
+        background: `${c.color}10`,
+        border: `1px solid ${c.color}25`,
+        fontSize: '0.82rem',
+        fontWeight: 500,
+        color: c.color,
+        transition: 'all 0.3s ease',
+        marginTop: '0.5rem',
+      }}
+    >
+      {c.icon}
+      <span>{c.label}</span>
+
+      {/* Volume bars when listening */}
+      {state === 'listening' && (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px', height: 14 }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <span
+              key={i}
+              style={{
+                width: 2,
+                height: Math.max(3, Math.min(14, bars * (i < 4 ? i + 1 : 8 - i) * 0.3)),
+                borderRadius: 1,
+                background: c.color,
+                transition: 'height 0.1s ease',
+              }}
+            />
+          ))}
+        </span>
+      )}
+    </div>
   );
 }
