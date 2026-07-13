@@ -5,8 +5,7 @@ import ScenarioSelector from '@/components/ScenarioSelector';
 import RecordButton from '@/components/RecordButton';
 import CoachingReport from '@/components/CoachingReport';
 import AvatarCanvas from '@/components/avatar/AvatarCanvas';
-import AvatarProviderToggle, { useAvatarProvider } from '@/components/AvatarProviderToggle';
-import { preloadAvatars } from '@/lib/avatar-utils';
+
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
 import { useVoiceAgent, type AgentState } from '@/lib/voice/useVoiceAgent';
@@ -64,7 +63,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<CoachingReportData | null>(null);
-  const [avatarProvider, setAvatarProvider] = useAvatarProvider();
+
   const [streamingText, setStreamingText] = useState('');
   const [voiceMode, setVoiceMode] = useState<'push' | 'auto'>('auto');
 
@@ -91,23 +90,7 @@ export default function Home() {
     }
   }, []);
 
-  // Preload avatars when provider changes
-  useEffect(() => {
-    preloadAvatars([
-      'salary-entry',
-      'salary-senior',
-      'salary-equity',
-      'salary-counteroffer',
-      'fundraising-cofounder',
-      'fundraising-preseed',
-      'fundraising-series-a',
-      'freelance-rate',
-      'scope-creep',
-      'vendor-pricing',
-      'car-buying',
-      'rent-negotiation',
-    ]);
-  }, [avatarProvider]);
+
 
   // Voice agent (auto mode)
   const { agentState, isListening, isRecording, volume, isEnabled, toggle } = useVoiceAgent({
@@ -315,13 +298,10 @@ export default function Home() {
         {/* SCENARIO SELECTOR */}
         {view === 'select' && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-              <AvatarProviderToggle value={avatarProvider} onChange={setAvatarProvider} />
-            </div>
+
             <ScenarioSelector
               onSelect={handleSelectScenario}
               selectedId={scenarioId}
-              provider={avatarProvider}
             />
           </>
         )}
@@ -333,8 +313,6 @@ export default function Home() {
             <AvatarCanvas
               emotion={currentEmotion}
               isSpeaking={isAiSpeaking}
-              scenarioId={scenarioId || undefined}
-              provider={avatarProvider}
             />
 
             {/* AI Speech Bubble */}
