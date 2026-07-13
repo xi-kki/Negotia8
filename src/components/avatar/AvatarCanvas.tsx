@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { CircleDot, Meh, Frown, Smile, Circle } from 'lucide-react';
-import type { Emotion } from './AvatarModel';
+import type { Emotion } from '@/types';
 import AvatarDicebear from '../AvatarDicebear';
 import { getCounterpartAvatar } from '@/lib/avatar-utils';
 
