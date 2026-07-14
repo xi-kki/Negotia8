@@ -5,10 +5,15 @@ import ScenarioSelector from '@/components/ScenarioSelector';
 import RecordButton from '@/components/RecordButton';
 import CoachingReport from '@/components/CoachingReport';
 import AvatarCanvas from '@/components/avatar/AvatarCanvas';
+import AnamAvatar from '@/components/avatar/AnamAvatar';
+import PracticeHistory from '@/components/PracticeHistory';
+import StatsDashboard from '@/components/StatsDashboard';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 import { speakText, stopSpeaking, setOnEnded } from '@/lib/voice/tts-player';
 import { analyzeTurn, generateCoachingReport } from '@/lib/coaching-engine';
 import { useVoiceAgent, type AgentState } from '@/lib/voice/useVoiceAgent';
+import { saveSession } from '@/lib/session-history';
 import {
   Mic,
   Bot,
@@ -24,8 +29,25 @@ import {
   PhoneOff,
   Volume2,
   Loader2,
+  History,
+  BarChart3,
 } from 'lucide-react';
 import type { Emotion, Turn, CoachingReportData, ViewMode } from '@/types';
+
+const SCENARIO_TITLES: Record<string, string> = {
+  'salary-entry': 'Entry-Level Salary',
+  'salary-senior': 'Senior Counter-Offer',
+  'salary-equity': 'Equity vs Cash',
+  'salary-counteroffer': 'Employer Counteroffer',
+  'fundraising-cofounder': 'Co-Founder Equity Split',
+  'fundraising-preseed': 'Pre-Seed SAFE',
+  'fundraising-series-a': 'Series A Term Sheet',
+  'freelance-rate': 'Freelance Rate',
+  'scope-creep': 'Scope Creep',
+  'vendor-pricing': 'B2B SaaS Pricing',
+  'car-buying': 'Car Dealership',
+  'rent-negotiation': 'Rent Negotiation',
+};
 
 const OPENING_LINES: Record<string, string> = {
   'salary-entry':
@@ -43,7 +65,7 @@ const OPENING_LINES: Record<string, string> = {
   'fundraising-series-a':
     "Great deck. Let's talk valuation. Given your $500K ARR, I'm thinking $15M post-money.",
   'freelance-rate':
-    "Love your portfolio! We've budgeted $100/hr for this 3-month redesign project.",
+    "Love your portfolio! We've budgetized $100/hr for this 3-month redesign project.",
   'scope-creep':
     'Hey, the homepage looks great! Just one more thing — could we add a testimonials carousel?',
   'vendor-pricing':
@@ -63,9 +85,14 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<CoachingReportData | null>(null);
+  const [useAnamAvatar, setUseAnamAvatar] = useState(true);
 
   const [streamingText, setStreamingText] = useState('');
   const [voiceMode, setVoiceMode] = useState<'push' | 'auto'>('auto');
+
+  // New state for history
+  const [showHistory, setShowHistory] = useState(false);
+  const [sessionStartedAt, setSessionStartedAt] = useState<Date | null>(null);
 
   const transcriptRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
@@ -89,8 +116,6 @@ export default function Home() {
       };
     }
   }, []);
-
-
 
   // Voice agent (auto mode)
   const { agentState, isListening, isRecording, volume, isEnabled, toggle } = useVoiceAgent({
@@ -121,6 +146,7 @@ export default function Home() {
     setReport(null);
     setAiResponse('');
     setError(null);
+    setSessionStartedAt(new Date());
     setView('negotiate');
 
     setTimeout(() => {
@@ -223,7 +249,7 @@ export default function Home() {
     const analyzed = turns.map((t, i) => analyzeTurn(t.userText, t.aiText, t.emotion, i + 1));
     const coachingReport = generateCoachingReport(analyzed);
 
-    setReport({
+    const finalReport: CoachingReportData = {
       overallScore: coachingReport.overallScore,
       breakdown: coachingReport.breakdown,
       whatYouDidWell:
@@ -247,10 +273,23 @@ export default function Home() {
           : ['Anchoring', 'Counter-offer'],
       totalFillerWords: coachingReport.totalFillerWords,
       advice: coachingReport.advice,
-    });
+    };
+
+    setReport(finalReport);
+
+    // Save session to history
+    if (scenarioId && sessionStartedAt) {
+      saveSession(
+        scenarioId,
+        SCENARIO_TITLES[scenarioId] || scenarioId,
+        turns,
+        finalReport,
+        sessionStartedAt,
+      );
+    }
 
     setView('coaching');
-  }, [turns]);
+  }, [turns, scenarioId, sessionStartedAt]);
 
   const handleRestart = useCallback(() => {
     stopSpeaking();
@@ -260,37 +299,41 @@ export default function Home() {
     setReport(null);
     setAiResponse('');
     setError(null);
+    setSessionStartedAt(null);
   }, []);
 
+  // Show history modal
+  if (showHistory) {
+    return (
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '1rem', minHeight: '100vh' }}>
+        <ErrorBoundary>
+          <PracticeHistory onClose={() => setShowHistory(false)} />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', padding: '1rem', minHeight: '100vh' }}>
+    <div className="app-container">
       {/* Header */}
-      <header
-        style={{
-          textAlign: 'center',
-          padding: '1.25rem 0',
-          borderBottom: '1px solid var(--border)',
-          marginBottom: '0.5rem',
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: '1.8rem',
-            fontWeight: 700,
-            letterSpacing: '-0.03em',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-          }}
+      <header className="app-header">
+        <div className="header-content">
+          <h1 className="header-title">
+            <Mic size={24} />
+            Negotia8
+          </h1>
+          <p className="header-subtitle">
+            Practice negotiations against AI with emotional intelligence
+          </p>
+        </div>
+        <button
+          onClick={() => setShowHistory(true)}
+          className="header-history-btn"
+          aria-label="View practice history"
         >
-          <Mic size={24} />
-          Negotia8
-        </h1>
-        <p style={{ margin: '0.3rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-          Practice negotiations against AI with emotional intelligence
-        </p>
+          <History size={18} />
+          <span className="history-btn-text">History</span>
+        </button>
       </header>
 
       {/* View container */}
@@ -298,48 +341,44 @@ export default function Home() {
         {/* SCENARIO SELECTOR */}
         {view === 'select' && (
           <>
-
-            <ScenarioSelector
-              onSelect={handleSelectScenario}
-              selectedId={scenarioId}
-            />
+            <StatsDashboard onViewHistory={() => setShowHistory(true)} />
+            <ScenarioSelector onSelect={handleSelectScenario} selectedId={scenarioId} />
           </>
         )}
 
         {/* NEGOTIATION VIEW */}
         {view === 'negotiate' && (
-          <div style={{ padding: '0.5rem 0' }}>
+          <div className="negotiate-container">
             {/* Counterpart avatar with emotion */}
-            <AvatarCanvas
-              emotion={currentEmotion}
-              isSpeaking={isAiSpeaking}
-            />
+            <ErrorBoundary
+              fallback={<AvatarCanvas emotion={currentEmotion} isSpeaking={isAiSpeaking} />}
+            >
+              {useAnamAvatar ? (
+                <AnamAvatar
+                  isSpeaking={isAiSpeaking}
+                  speakText={aiResponse}
+                  emotion={currentEmotion}
+                />
+              ) : (
+                <AvatarCanvas emotion={currentEmotion} isSpeaking={isAiSpeaking} />
+              )}
+            </ErrorBoundary>
+
+            {/* Avatar toggle */}
+            <div className="avatar-toggle">
+              <button
+                onClick={() => setUseAnamAvatar(!useAnamAvatar)}
+                className="avatar-toggle-btn"
+                aria-label={useAnamAvatar ? 'Switch to SVG avatar' : 'Switch to Anam avatar'}
+              >
+                {useAnamAvatar ? '✨ Anam Avatar' : '🎨 SVG Avatar'}
+              </button>
+            </div>
 
             {/* AI Speech Bubble */}
             {(aiResponse || streamingText) && (
-              <div
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
-                  padding: '1rem 1.25rem',
-                  margin: '0.75rem 0',
-                  fontSize: '0.95rem',
-                  lineHeight: 1.6,
-                  position: 'relative',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '0.75rem',
-                    color: isAiSpeaking ? 'var(--green)' : 'var(--text-muted)',
-                    marginBottom: '0.35rem',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
+              <div className="ai-speech-bubble" role="log" aria-live="polite">
+                <div className="ai-speech-header">
                   {isAiSpeaking ? (
                     <>
                       <CircleDot size={12} /> Speaking...
@@ -350,9 +389,7 @@ export default function Home() {
                     </>
                   )}
                   {isLoading && (
-                    <span style={{ color: 'var(--yellow)', fontSize: '0.7rem' }}>
-                      Processing your turn...
-                    </span>
+                    <span className="processing-indicator">Processing your turn...</span>
                   )}
                 </div>
                 {streamingText || aiResponse}
@@ -362,20 +399,7 @@ export default function Home() {
 
             {/* Error banner */}
             {error && (
-              <div
-                style={{
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '10px',
-                  padding: '0.6rem 1rem',
-                  margin: '0.5rem 0',
-                  fontSize: '0.82rem',
-                  color: 'var(--red)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                }}
-              >
+              <div className="error-banner" role="alert">
                 <AlertTriangle size={14} />
                 {error}
               </div>
@@ -385,36 +409,20 @@ export default function Home() {
             {turns.length > 0 && (
               <div
                 ref={transcriptRef}
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
-                  padding: '1rem',
-                  margin: '0.75rem 0',
-                  maxHeight: 200,
-                  overflowY: 'auto',
-                }}
+                className="transcript-container"
+                role="log"
+                aria-label="Conversation transcript"
               >
-                <div
-                  style={{
-                    fontSize: '0.75rem',
-                    color: 'var(--text-muted)',
-                    marginBottom: '0.5rem',
-                    fontWeight: 500,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
+                <div className="transcript-header">
                   <FileText size={12} /> Transcript ({turns.length} turn
                   {turns.length !== 1 ? 's' : ''})
                 </div>
                 {turns.map((t, i) => (
-                  <div key={i} style={{ marginBottom: '0.75rem', fontSize: '0.85rem' }}>
-                    <div style={{ color: 'var(--accent-hover)' }}>
+                  <div key={i} className="transcript-turn">
+                    <div className="transcript-user">
                       <strong>You:</strong> {t.userText}
                     </div>
-                    <div style={{ color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                    <div className="transcript-ai">
                       <strong>AI</strong> <EmotionBadge emotion={t.emotion} />
                       {t.aiText}
                     </div>
@@ -425,15 +433,8 @@ export default function Home() {
 
             {/* Empty state when no turns yet */}
             {turns.length === 0 && !aiResponse && (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '2rem',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <div style={{ marginBottom: '0.5rem', color: 'var(--accent)' }}>
+              <div className="empty-state">
+                <div className="empty-state-icon">
                   <Hand size={40} />
                 </div>
                 <p>The AI is ready. Hold the mic and start negotiating!</p>
@@ -451,59 +452,22 @@ export default function Home() {
             )}
 
             {/* Controls */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.75rem',
-                marginTop: '0.75rem',
-              }}
-            >
+            <div className="controls-container">
               {/* Mode toggle */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '24px',
-                  padding: '0.2rem',
-                }}
-              >
+              <div className="mode-toggle" role="radiogroup" aria-label="Voice mode">
                 <button
                   onClick={() => setVoiceMode('auto')}
-                  style={{
-                    padding: '0.35rem 0.9rem',
-                    borderRadius: '20px',
-                    border: 'none',
-                    background: voiceMode === 'auto' ? 'var(--accent)' : 'transparent',
-                    color: voiceMode === 'auto' ? '#fff' : 'var(--text-muted)',
-                    fontSize: '0.78rem',
-                    fontWeight: voiceMode === 'auto' ? 600 : 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    transition: 'all 0.15s',
-                  }}
+                  className={`mode-btn ${voiceMode === 'auto' ? 'active' : ''}`}
+                  role="radio"
+                  aria-checked={voiceMode === 'auto'}
                 >
                   <Radio size={12} /> Auto Listen
                 </button>
                 <button
                   onClick={() => setVoiceMode('push')}
-                  style={{
-                    padding: '0.35rem 0.9rem',
-                    borderRadius: '20px',
-                    border: 'none',
-                    background: voiceMode === 'push' ? 'var(--accent)' : 'transparent',
-                    color: voiceMode === 'push' ? '#fff' : 'var(--text-muted)',
-                    fontSize: '0.78rem',
-                    fontWeight: voiceMode === 'push' ? 600 : 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    transition: 'all 0.15s',
-                  }}
+                  className={`mode-btn ${voiceMode === 'push' ? 'active' : ''}`}
+                  role="radio"
+                  aria-checked={voiceMode === 'push'}
                 >
                   <Mic size={12} /> Push to Talk
                 </button>
@@ -512,20 +476,8 @@ export default function Home() {
               {voiceMode === 'auto' ? (
                 <button
                   onClick={toggle}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    border: `3px solid ${isEnabled ? 'var(--green)' : 'var(--accent)'}`,
-                    background: isEnabled ? 'var(--green)' : 'var(--bg-card)',
-                    color: '#fff',
-                    fontSize: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s',
-                    boxShadow: isEnabled ? '0 0 20px rgba(34, 197, 94, 0.3)' : 'none',
-                  }}
+                  className={`mic-btn ${isEnabled ? 'active' : ''}`}
+                  aria-label={isEnabled ? 'Stop listening' : 'Start listening'}
                 >
                   {isEnabled ? <PhoneOff size={28} /> : <Phone size={28} />}
                 </button>
@@ -533,48 +485,20 @@ export default function Home() {
                 <RecordButton onTranscript={handleTranscript} disabled={isLoading} />
               )}
 
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '0.75rem',
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                }}
-              >
+              <div className="action-buttons">
                 <button
                   onClick={handleEndNegotiation}
                   disabled={turns.length === 0}
-                  style={{
-                    padding: '0.6rem 1.5rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border)',
-                    background: 'transparent',
-                    color: turns.length === 0 ? 'var(--text-muted)' : 'var(--text)',
-                    fontSize: '0.88rem',
-                    opacity: turns.length === 0 ? 0.5 : 1,
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
+                  className="action-btn end-btn"
+                  aria-label="End negotiation and get coaching report"
                 >
                   <Square size={12} />
                   End Negotiation
                 </button>
                 <button
                   onClick={handleRestart}
-                  style={{
-                    padding: '0.6rem 1.5rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--border)',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.88rem',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
+                  className="action-btn back-btn"
+                  aria-label="Back to scenario selection"
                 >
                   <ArrowLeft size={14} />
                   Back to Scenarios
@@ -585,7 +509,11 @@ export default function Home() {
         )}
 
         {/* COACHING VIEW */}
-        {view === 'coaching' && <CoachingReport report={report} onRestart={handleRestart} />}
+        {view === 'coaching' && (
+          <ErrorBoundary>
+            <CoachingReport report={report} onRestart={handleRestart} />
+          </ErrorBoundary>
+        )}
       </div>
     </div>
   );
@@ -601,17 +529,12 @@ function EmotionBadge({ emotion }: { emotion: string }) {
   };
   return (
     <span
+      className="emotion-badge"
       style={{
-        display: 'inline-block',
-        fontSize: '0.65rem',
-        padding: '0.1rem 0.4rem',
-        borderRadius: '4px',
         background: `${colors[emotion] || '#888'}20`,
         color: colors[emotion] || '#888',
-        marginRight: '0.3rem',
-        textTransform: 'capitalize',
-        fontWeight: 500,
       }}
+      aria-label={`Emotion: ${emotion}`}
     >
       {emotion}
     </span>
@@ -630,7 +553,7 @@ function AgentStateIndicator({
   isListening: boolean;
   isRecording: boolean;
 }) {
-  const config: Record<AgentState, { label: string; color: string; icon: React.ReactNode }>= {
+  const config: Record<AgentState, { label: string; color: string; icon: React.ReactNode }> = {
     idle: { label: 'Ready', color: 'var(--text-muted)', icon: <Radio size={14} /> },
     listening: {
       label: 'Listening...',
@@ -656,37 +579,29 @@ function AgentStateIndicator({
 
   return (
     <div
+      className="agent-state-indicator"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.6rem',
-        padding: '0.5rem 1rem',
-        borderRadius: '20px',
         background: `${c.color}10`,
         border: `1px solid ${c.color}25`,
-        fontSize: '0.82rem',
-        fontWeight: 500,
         color: c.color,
-        transition: 'all 0.3s ease',
-        marginTop: '0.5rem',
       }}
+      role="status"
+      aria-live="polite"
+      aria-label={`Agent status: ${c.label}`}
     >
       {c.icon}
       <span>{c.label}</span>
 
       {/* Volume bars when listening */}
       {state === 'listening' && (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '1px', height: 14 }}>
+        <span className="volume-bars" aria-hidden="true">
           {Array.from({ length: 8 }).map((_, i) => (
             <span
               key={i}
+              className="volume-bar"
               style={{
-                width: 2,
                 height: Math.max(3, Math.min(14, bars * (i < 4 ? i + 1 : 8 - i) * 0.3)),
-                borderRadius: 1,
                 background: c.color,
-                transition: 'height 0.1s ease',
               }}
             />
           ))}
