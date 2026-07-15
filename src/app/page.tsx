@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useRef, useCallback, useEffect } from 'react';
 import ScenarioSelector from '@/components/ScenarioSelector';
 import RecordButton from '@/components/RecordButton';
